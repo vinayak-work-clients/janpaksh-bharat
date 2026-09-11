@@ -3,25 +3,202 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ink: #0b0b0f;
+  --color-ink-soft: #1c1c22;
+  --color-paper: #f6f3ee;
+  --color-paper-2: #ede8e0;
+  --color-saffron: #e8862a;
+  --color-saffron-light: #f5b56a;
+  --color-saffron-dark: #b8611a;
+  --color-breaking: #c8102e;
+  --color-rule: #d8d2c8;
+  --color-muted: #6b6b75;
+
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --header-height: 4.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-saffron-light);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--color-saffron);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .container-editorial {
+    width: 100%;
+    max-width: 1320px;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 3rem);
+  }
+
+  .hairline {
+    border-top: 1px solid var(--color-rule);
+  }
+
+  .hairline-b {
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  /* Devanagari needs taller line boxes than Latin display type. */
+  .hindi {
+    font-family: var(--font-hindi-serif), var(--font-serif), serif;
+    line-height: 1.35;
+    letter-spacing: 0;
+    font-feature-settings: normal;
+  }
+
+  .hindi-sans {
+    font-family: var(--font-hindi-sans), var(--font-sans), sans-serif;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  .text-display.hindi,
+  .text-h1.hindi,
+  .text-h2.hindi {
+    line-height: 1.25;
+  }
+
+  .marquee-track {
+    animation: marquee 40s linear infinite;
+  }
+
+  /* Headline underline that grows from the left on hover/focus. */
+  .headline-link {
+    background-image: linear-gradient(
+      var(--color-saffron),
+      var(--color-saffron)
+    );
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 2px;
+    transition: background-size 0.45s var(--ease-expo-out);
+    text-decoration: none;
+  }
+  .group:hover .headline-link,
+  .group:focus-visible .headline-link,
+  a:hover > .headline-link,
+  a:focus-visible > .headline-link {
+    background-size: 100% 2px;
+  }
+  .headline-link--paper {
+    background-image: linear-gradient(
+      var(--color-paper),
+      var(--color-paper)
+    );
+  }
+
+  /* Filmic grain — inline SVG noise, very low opacity. */
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+    mix-blend-mode: overlay;
+  }
+
+  /* Hide native scrollbars on carousels while keeping them scrollable. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Multi-line clamp helpers */
+  .clamp-1,
+  .clamp-2,
+  .clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-1 {
+    -webkit-line-clamp: 1;
+  }
+  .clamp-2 {
+    -webkit-line-clamp: 2;
+  }
+  .clamp-3 {
+    -webkit-line-clamp: 3;
+  }
+
+  .marquee-pause:hover .marquee-track,
+  .marquee-pause:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Skip-link */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100%;
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .marquee-track {
+    animation: none !important;
   }
 }
