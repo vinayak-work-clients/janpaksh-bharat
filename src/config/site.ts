@@ -51,14 +51,14 @@ export const siteConfig = {
   archiveNotice: "Content auto-archives after 30 days",
   hero: {
     kicker: "Independent · Current Affairs · Bharat",
-    // Set to "video" and supply a stable mp4 in videoSrc to enable the
-    // motion background. Falls back to the poster with a Ken Burns drift.
-    mediaType: "image" as "video" | "image",
-    videoSrc: "",
+    // The poster is never shown as a picture: it is blurred and dimmed into a
+    // colour wash behind the news deck. Switch `background` to "solid" to
+    // drop the wash and keep only the ink ground and saffron glow.
     poster:
       "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=2400&q=80",
-    imageSrc:
-      "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=2400&q=80",
+    background: "wash" as "wash" | "solid",
+    /** Number of stories in the floating news deck (min 5 when available). */
+    deckSize: 6,
   },
   podcast: {
     showName: "Janpaksh Sunvai",

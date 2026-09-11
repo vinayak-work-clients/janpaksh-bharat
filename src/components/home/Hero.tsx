@@ -1,86 +1,50 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import type { Post } from "@/types/content";
-import { cn, formatDate } from "@/lib/utils";
 import { usePreloader } from "@/components/PreloaderProvider";
 import { Button } from "@/components/ui/Button";
 import { Kicker } from "@/components/ui/Kicker";
+import { NewsDeck } from "@/components/home/NewsDeck";
 
 const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
 
 interface HeroProps {
-  /** Three most recent stories for the bottom strip. */
-  latest: Post[];
+  /** Stories for the floating news deck: breaking first, then latest (≤6). */
+  deck: Post[];
 }
 
 /* ------------------------------------------------------------------ */
-/*  Background media                                                   */
+/*  Backdrop: ink, optional blurred colour wash, saffron glow, grain    */
 /* ------------------------------------------------------------------ */
 
-function HeroMedia() {
+function HeroBackdrop() {
   const { hero } = siteConfig;
-  const reduceMotion = useReducedMotion();
-  const [wide, setWide] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const update = () => setWide(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-
-  const useVideo =
-    hero.mediaType === "video" &&
-    Boolean(hero.videoSrc) &&
-    wide &&
-    !reduceMotion &&
-    !videoFailed;
-
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-ink">
-      {useVideo ? (
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={hero.poster}
-          onError={() => setVideoFailed(true)}
-        >
-          <source src={hero.videoSrc} type="video/mp4" />
-        </video>
-      ) : (
-        <div
-          className={cn(
-            "absolute inset-0 origin-center will-change-transform",
-            !reduceMotion && "animate-kenburns",
-          )}
-        >
-          <Image
-            src={hero.imageSrc}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        </div>
+      {hero.background === "wash" && (
+        <Image
+          src={hero.poster}
+          alt=""
+          fill
+          sizes="100vw"
+          quality={35}
+          className="scale-[1.15] object-cover opacity-[0.16] blur-[28px]"
+        />
       )}
-
-      {/* Bottom → top ink gradient for legibility of the headline */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,11,15,0.95)_0%,rgba(11,11,15,0.75)_30%,rgba(11,11,15,0)_55%)]" />
+      {/* Saffron glow, centred behind the deck's centre card */}
+      <div
+        className="absolute left-1/2 top-[64%] h-[900px] w-[900px] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 lg:left-[71%] lg:top-1/2"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(232,134,42,0.18) 0%, rgba(232,134,42,0.08) 30%, rgba(232,134,42,0) 60%)",
+        }}
+      />
       {/* Top gradient so the transparent navbar reads cleanly */}
-      <div className="absolute inset-x-0 top-0 h-48 bg-[linear-gradient(to_bottom,rgba(11,11,15,0.7),rgba(11,11,15,0))]" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(to_bottom,rgba(11,11,15,0.6),rgba(11,11,15,0))]" />
       {/* Filmic grain */}
       <div className="grain absolute inset-0 opacity-[0.05]" />
     </div>
@@ -99,32 +63,36 @@ function SplitHeadline({ text, play }: { text: string; play: boolean }) {
     <h1
       id="hero-title"
       lang="hi"
-      className="hindi mt-5 max-w-[16ch] font-hindi-serif text-display font-bold text-paper"
+      className="hindi mt-5 max-w-[18ch] font-hindi-serif text-display font-bold text-paper lg:text-[clamp(2.75rem,4.15vw,4.25rem)]"
     >
       {words.map((word, i) => (
+        // The word space lives between the inline-blocks; a trailing space
+        // inside an inline-block collapses and the words would run together.
         // py keeps Devanagari matras (above/below the baseline) inside the clip box.
-        <span key={`${word}-${i}`} className="inline-block overflow-hidden py-[0.15em] align-bottom">
-          <motion.span
-            className="inline-block will-change-transform"
-            initial={reduceMotion ? { opacity: 0 } : { y: "110%" }}
-            animate={
-              play
-                ? reduceMotion
-                  ? { opacity: 1 }
-                  : { y: "0%" }
-                : reduceMotion
-                  ? { opacity: 0 }
-                  : { y: "110%" }
-            }
-            transition={{
-              duration: reduceMotion ? 0.4 : 0.9,
-              delay: play ? i * 0.06 : 0,
-              ease: EXPO_OUT,
-            }}
-          >
-            {word}
-          </motion.span>
-          {i < words.length - 1 && " "}
+        <span key={`${word}-${i}`}>
+          {i > 0 && " "}
+          <span className="inline-block overflow-hidden py-[0.15em] align-bottom">
+            <motion.span
+              className="inline-block will-change-transform"
+              initial={reduceMotion ? { opacity: 0 } : { y: "110%" }}
+              animate={
+                play
+                  ? reduceMotion
+                    ? { opacity: 1 }
+                    : { y: "0%" }
+                  : reduceMotion
+                    ? { opacity: 0 }
+                    : { y: "110%" }
+              }
+              transition={{
+                duration: reduceMotion ? 0.4 : 0.9,
+                delay: play ? i * 0.06 : 0,
+                ease: EXPO_OUT,
+              }}
+            >
+              {word}
+            </motion.span>
+          </span>
         </span>
       ))}
     </h1>
@@ -135,11 +103,9 @@ function SplitHeadline({ text, play }: { text: string; play: boolean }) {
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-export function Hero({ latest }: HeroProps) {
+export function Hero({ deck }: HeroProps) {
   const { done } = usePreloader();
   const reduceMotion = useReducedMotion();
-  const [today] = useState(() => formatDate(new Date(), "EEEE, d MMMM yyyy"));
-  const rootRef = useRef<HTMLElement>(null);
 
   const fade = (delay: number) => ({
     initial: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 },
@@ -153,17 +119,18 @@ export function Hero({ latest }: HeroProps) {
 
   return (
     <section
-      ref={rootRef}
       aria-labelledby="hero-title"
-      className="relative -mt-[var(--header-height)] flex min-h-[100svh] flex-col justify-end bg-ink text-paper"
+      // overflow-x: clip (not hidden) lets the deck float past the right edge
+      // without a horizontal scrollbar while card shadows still show vertically.
+      className="relative -mt-[var(--header-height)] flex min-h-[100svh] flex-col overflow-x-clip bg-ink text-paper"
     >
-      <HeroMedia />
+      <HeroBackdrop />
 
-      <div className="container-editorial relative flex flex-1 flex-col justify-end pt-[calc(var(--header-height)+4rem)]">
-        {/* Main copy */}
-        <div className="pb-10 sm:pb-14 lg:pb-16">
+      <div className="container-editorial relative flex flex-1 flex-col justify-center pb-16 pt-[calc(var(--header-height)+2.5rem)] lg:grid lg:grid-cols-12 lg:items-center lg:gap-x-8 lg:pb-20 lg:pt-[calc(var(--header-height)+3rem)]">
+        {/* Tagline stack */}
+        <div className="relative z-10 lg:col-span-5">
           <motion.div {...fade(0)}>
-            <Kicker tone="saffron" dot>
+            <Kicker tone="paper" dot className="text-[0.68rem] text-paper/70 sm:text-kicker">
               {siteConfig.hero.kicker}
             </Kicker>
           </motion.div>
@@ -172,7 +139,7 @@ export function Hero({ latest }: HeroProps) {
 
           <motion.p
             {...fade(0.55)}
-            className="mt-4 max-w-xl font-serif text-h3 font-normal italic text-paper/80"
+            className="mt-4 max-w-xl font-serif text-h3 font-normal italic text-paper/75"
           >
             {siteConfig.taglineEn}
           </motion.p>
@@ -197,47 +164,10 @@ export function Hero({ latest }: HeroProps) {
           </motion.div>
         </div>
 
-        {/* Bottom strip */}
-        <motion.div
-          {...fade(0.85)}
-          className="flex items-center justify-between gap-6 border-t border-paper/20 py-5"
-        >
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <time
-              dateTime={new Date().toISOString().slice(0, 10)}
-              suppressHydrationWarning
-              className="font-sans text-kicker uppercase text-paper/60"
-            >
-              {today}
-            </time>
-            <span aria-hidden="true" className="hidden h-1 w-1 rounded-full bg-saffron sm:block" />
-            <Kicker tone="paper" className="hidden sm:inline-flex">
-              Latest
-            </Kicker>
-          </div>
-
-          {/* Desktop: three latest headlines */}
-          <ul className="hidden items-stretch divide-x divide-paper/15 lg:flex" aria-label="Latest stories">
-            {latest.slice(0, 3).map((post) => (
-              <li key={post.id} className="max-w-[17rem] px-5 first:pl-0 last:pr-0">
-                <Link
-                  href={`/news/${post.slug}`}
-                  className="group block font-serif text-[0.95rem] leading-snug text-paper/85 transition-colors hover:text-paper"
-                >
-                  <span className="headline-link headline-link--paper clamp-2">{post.title}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Mobile: scroll indicator */}
-          <div className="flex items-center gap-3 lg:hidden" aria-hidden="true">
-            <span className="font-sans text-kicker uppercase text-paper/50">Scroll</span>
-            <span className="relative block h-10 w-px overflow-hidden bg-paper/20">
-              <span className="absolute inset-x-0 top-0 h-full w-full animate-scroll-line bg-saffron" />
-            </span>
-          </div>
-        </motion.div>
+        {/* News deck — allowed to float past the container's right edge by 8%. */}
+        <div className="relative mt-8 lg:col-span-7 lg:col-start-6 lg:-mr-[8%] lg:mt-0">
+          <NewsDeck posts={deck} play={done} />
+        </div>
       </div>
     </section>
   );

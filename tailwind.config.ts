@@ -75,10 +75,6 @@ const config: Config = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
-        kenburns: {
-          "0%": { transform: "scale(1)" },
-          "100%": { transform: "scale(1.08)" },
-        },
         float: {
           "0%, 100%": { transform: "translateY(-6px)" },
           "50%": { transform: "translateY(6px)" },
@@ -99,7 +95,6 @@ const config: Config = {
       },
       animation: {
         marquee: "marquee 40s linear infinite",
-        kenburns: "kenburns 24s linear infinite alternate",
         float: "float 6s ease-in-out infinite",
         "scroll-line": "scroll-line 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite",
         wave: "wave 1.1s ease-in-out infinite",

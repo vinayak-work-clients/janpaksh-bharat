@@ -97,6 +97,23 @@ export function getHomeFeed(): HomeFeed {
   };
 }
 
+/**
+ * Stories for the hero news deck: breaking first, then the latest, with no
+ * duplicates. Returns fewer than `n` only when fewer live posts exist.
+ */
+export function getHeroDeck(n = 6): Post[] {
+  const live = getLivePosts();
+  const seen = new Set<string>();
+  const out: Post[] = [];
+  for (const p of [...live.filter((p) => p.isBreaking), ...live]) {
+    if (out.length >= n) break;
+    if (seen.has(p.id)) continue;
+    seen.add(p.id);
+    out.push(p);
+  }
+  return out;
+}
+
 /** Live post by slug (archived posts 404). */
 export function getLivePostBySlug(slug: string): Post | undefined {
   return getLivePosts().find((p) => p.slug === slug);

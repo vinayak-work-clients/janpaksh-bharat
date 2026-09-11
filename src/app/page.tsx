@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
-import { getHomeFeed, getLivePosts } from "@/lib/posts";
+import { getHeroDeck, getHomeFeed, getLivePosts } from "@/lib/posts";
 import { Hero } from "@/components/home/Hero";
 import { TopStories } from "@/components/home/TopStories";
 import { BreakingBand } from "@/components/home/BreakingBand";
@@ -19,10 +19,11 @@ export const metadata: Metadata = {
 export default function HomePage() {
   const feed = getHomeFeed();
   const latest = getLivePosts().slice(0, 3);
+  const deck = getHeroDeck(siteConfig.hero.deckSize);
 
   return (
     <>
-      <Hero latest={latest} />
+      <Hero deck={deck} />
       <TopStories lead={feed.lead} secondary={feed.secondary} headlines={feed.headlines} />
       <BreakingBand posts={feed.breaking} />
       <Mosaic posts={feed.mosaic} />
