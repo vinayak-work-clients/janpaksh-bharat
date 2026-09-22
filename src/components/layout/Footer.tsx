@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { sections, sectionHref } from "@/config/sections";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
 import { Kicker } from "@/components/ui/Kicker";
@@ -39,19 +40,21 @@ export function Footer() {
   const companyLinks = siteConfig.nav.filter((n) =>
     ["/about", "/team", "/services", "/contact"].includes(n.href),
   );
+  const sectionLinks = sections.map((s) => ({ label: s.name, href: sectionHref(s.slug) }));
 
   return (
     <footer className="relative overflow-hidden bg-ink text-paper">
-      {/* Giant cropped wordmark */}
+      {/* Giant cropped Hindi wordmark */}
       <div
         aria-hidden="true"
         className="container-editorial pointer-events-none select-none overflow-hidden"
       >
         <p
-          className="-mb-[0.22em] mt-10 whitespace-nowrap font-serif font-black uppercase leading-none tracking-[-0.03em] text-paper/[0.06]"
-          style={{ fontSize: "clamp(4rem, 15.5vw, 15rem)" }}
+          lang="hi"
+          className="hindi-display -mb-[0.28em] mt-8 whitespace-nowrap leading-[1.1] text-paper/[0.06]"
+          style={{ fontSize: "clamp(4.5rem, 17vw, 16rem)" }}
         >
-          {siteConfig.name}
+          {siteConfig.nameHindi}
         </p>
       </div>
 
@@ -59,8 +62,11 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 py-14 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* 1. About */}
           <div className="lg:col-span-4">
-            <Logo tone="paper" />
-            <p className="mt-5 max-w-sm font-sans text-[0.9rem] leading-relaxed text-paper/70">
+            <Logo tone="paper" size="footer" />
+            <Kicker as="p" tone="paper" className="mt-6 flex text-paper/50">
+              {siteConfig.name}
+            </Kicker>
+            <p className="mt-3 max-w-sm font-sans text-[0.9rem] leading-relaxed text-paper/70">
               {siteConfig.description}
             </p>
             <p className="hindi mt-4 text-[1.05rem] text-saffron">
@@ -71,7 +77,7 @@ export function Footer() {
 
           {/* 2. Sections */}
           <div className="lg:col-span-2">
-            <FooterColumn title="Sections" links={siteConfig.sections} />
+            <FooterColumn title="Sections" links={sectionLinks} />
           </div>
 
           {/* 3. Company */}

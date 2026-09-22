@@ -7,8 +7,10 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Menu, Search, X } from "lucide-react";
 import { socialLinks } from "@/components/icons/SocialIcons";
 import { siteConfig } from "@/config/site";
+import { sections, sectionHref } from "@/config/sections";
 import { cn, formatDate } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
+import { SectionNav } from "@/components/layout/SectionNav";
 import { Button } from "@/components/ui/Button";
 
 const SCROLL_THRESHOLD = 40;
@@ -86,8 +88,8 @@ export function Navbar() {
         )}
       >
         <div className="container-editorial flex h-full items-center justify-between gap-6">
-          {/* Left: logo */}
-          <Logo tone={tone} />
+          {/* Left: brand lockup */}
+          <Logo tone={tone} size="nav" />
 
           {/* Center: desktop nav */}
           <nav
@@ -181,6 +183,10 @@ export function Navbar() {
         </div>
       </header>
 
+      {/* Secondary section bar. On the home page it floats under the header
+          and appears once the header turns solid; elsewhere it is in flow. */}
+      <SectionNav floating={isHome} shown={scrolled} hidden={menuOpen} />
+
       {/* Mobile full-screen menu */}
       <AnimatePresence>
         {menuOpen && (
@@ -196,7 +202,7 @@ export function Navbar() {
             className="fixed inset-0 z-[70] flex flex-col bg-ink text-paper lg:hidden"
           >
             <div className="container-editorial flex h-[var(--header-height)] shrink-0 items-center justify-between">
-              <Logo tone="paper" />
+              <Logo tone="paper" size="nav" />
               <button
                 ref={closeBtnRef}
                 type="button"
@@ -210,7 +216,7 @@ export function Navbar() {
 
             <nav
               aria-label="Mobile"
-              className="container-editorial flex flex-1 flex-col justify-center overflow-y-auto py-8"
+              className="container-editorial flex flex-1 flex-col overflow-y-auto py-6"
             >
               <ul className="flex flex-col">
                 {siteConfig.nav.map((item, i) => {
@@ -232,7 +238,7 @@ export function Navbar() {
                         onClick={closeMenu}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "group flex items-baseline gap-4 py-3.5 font-serif text-[clamp(2rem,7vw,3.25rem)] font-semibold leading-none tracking-[-0.02em] transition-colors",
+                          "group flex items-baseline gap-4 py-3 font-serif text-[clamp(1.75rem,6vw,2.75rem)] font-semibold leading-none tracking-[-0.02em] transition-colors",
                           active ? "text-saffron" : "text-paper hover:text-saffron-light",
                         )}
                       >
@@ -245,6 +251,40 @@ export function Navbar() {
                   );
                 })}
               </ul>
+
+              {/* Sections */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: reduceMotion ? 0 : 0.45, duration: 0.5 }}
+                className="mt-8"
+              >
+                <p className="font-sans text-kicker uppercase text-paper/40">Sections</p>
+                <ul className="mt-3 grid grid-cols-2 gap-x-6">
+                  {sections.map((s) => {
+                    const href = sectionHref(s.slug);
+                    const active = pathname === href;
+                    return (
+                      <li key={s.slug} className="border-b border-paper/10">
+                        <Link
+                          href={href}
+                          onClick={closeMenu}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "flex items-baseline justify-between gap-3 py-2.5 font-sans text-[0.95rem] font-medium transition-colors",
+                            active ? "text-saffron" : "text-paper/85 hover:text-saffron-light",
+                          )}
+                        >
+                          {s.name}
+                          <span lang="hi" className="hindi-sans text-[0.7rem] text-paper/40">
+                            {s.nameHindi}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </motion.div>
             </nav>
 
             <motion.div

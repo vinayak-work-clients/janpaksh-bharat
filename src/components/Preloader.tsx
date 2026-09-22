@@ -9,12 +9,16 @@ const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
 const EASE_IN_OUT = [0.65, 0, 0.35, 1] as const;
 
 // Timeline (seconds)
-const T_OUT_START = 1.7; // wordmark starts blurring out
+const T_OUT_START = 1.7; // lockup starts blurring out
 const T_OVERLAY_OUT = 2.3; // overlay begins fading, unmounted after exit
 const START_DELAY_MS = 120; // settle after fonts are ready
 const FONT_WAIT_MAX_MS = 400; // never wait longer than this for fonts
 
-const WORDS = siteConfig.name.toUpperCase().split(" ");
+// Entrance offsets, measured from `started`.
+const D_HINDI = 0;
+const D_ENGLISH = 0.2; // slides in beneath the Hindi line
+const D_RULE = 0.55;
+const D_TAGLINE = 0.7;
 
 export function Preloader() {
   // Rendered on the server too, so the overlay covers the page from the very
@@ -26,7 +30,7 @@ export function Preloader() {
   const decided = useRef(false);
   const { markDone } = usePreloader();
 
-  // Hold the wordmark until the web fonts are in (max 400ms) plus a short
+  // Hold the lockup until the web fonts are in (max 400ms) plus a short
   // settle so it never flashes in a fallback face. The ref guard keeps React
   // StrictMode's double-invoked effects from scheduling the start twice.
   useEffect(() => {
@@ -52,7 +56,7 @@ export function Preloader() {
     };
   }, [visible]);
 
-  // Timeline, measured from the moment the wordmark starts.
+  // Timeline, measured from the moment the lockup starts.
   useEffect(() => {
     if (!started) return;
 
@@ -73,14 +77,28 @@ export function Preloader() {
     };
   }, [started, reduceMotion, markDone]);
 
+  const rise = (delay: number) => ({
+    initial: reduceMotion ? { opacity: 0 } : { y: 40, opacity: 0, filter: "blur(12px)" },
+    animate: !started
+      ? undefined
+      : reduceMotion
+        ? { opacity: 1 }
+        : { y: 0, opacity: 1, filter: "blur(0px)" },
+    transition: {
+      duration: reduceMotion ? 0.3 : 1.0,
+      delay: reduceMotion ? 0 : delay,
+      ease: EXPO_OUT,
+    },
+  });
+
   return (
     <AnimatePresence>
       {visible && (
+        // The whole overlay is aria-hidden: the <h1> inside is purely visual so
+        // every page keeps exactly one accessible h1.
         <motion.div
           key="preloader"
-          role="status"
-          aria-label={`Loading ${siteConfig.name}`}
-          aria-live="polite"
+          aria-hidden="true"
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,
@@ -89,7 +107,7 @@ export function Preloader() {
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-ink"
           style={{ willChange: "opacity" }}
         >
-          {/* Wordmark group — animates out as one unit */}
+          {/* Lockup group — animates out as one unit */}
           <motion.div
             className="flex flex-col items-start px-6"
             animate={
@@ -103,41 +121,27 @@ export function Preloader() {
             }}
             style={{ willChange: "filter, transform, opacity" }}
           >
-            <p
-              className="font-serif font-extrabold uppercase text-paper leading-[0.95] tracking-[-0.02em]"
-              style={{ fontSize: "clamp(2.5rem, 9vw, 8rem)" }}
+            {/* Line 1 — Hindi name at H1 scale. Padding keeps matras inside the box. */}
+            <motion.h1
+              lang="hi"
+              className="hindi-display -mx-[0.06em] px-[0.06em] py-[0.06em] text-paper"
+              style={{ fontSize: "clamp(3rem, 11vw, 9.5rem)", willChange: "filter, transform, opacity" }}
+              {...rise(D_HINDI)}
             >
-              {WORDS.map((word, i) => (
-                <motion.span
-                  key={word}
-                  className="block"
-                  initial={
-                    reduceMotion
-                      ? { opacity: 0 }
-                      : { y: 40, opacity: 0, filter: "blur(12px)" }
-                  }
-                  animate={
-                    !started
-                      ? undefined
-                      : reduceMotion
-                        ? { opacity: 1 }
-                        : { y: 0, opacity: 1, filter: "blur(0px)" }
-                  }
-                  transition={{
-                    duration: reduceMotion ? 0.3 : 1.0,
-                    delay: reduceMotion ? 0 : i * 0.15,
-                    ease: EXPO_OUT,
-                  }}
-                  style={{ willChange: "filter, transform, opacity" }}
-                >
-                  {word}
-                </motion.span>
-              ))}
-            </p>
+              {siteConfig.nameHindi}
+            </motion.h1>
+
+            {/* Line 2 — English name, tracked, saffron */}
+            <motion.p
+              className="-mt-[0.6em] font-serif font-bold uppercase tracking-[0.22em] text-saffron"
+              style={{ fontSize: "clamp(0.9rem, 2.4vw, 1.6rem)", willChange: "filter, transform, opacity" }}
+              {...rise(D_ENGLISH)}
+            >
+              {siteConfig.name}
+            </motion.p>
 
             {/* Saffron hairline drawing left → right */}
             <motion.span
-              aria-hidden="true"
               className="mt-5 block h-px w-full bg-saffron origin-left"
               initial={{ scaleX: 0, opacity: 1 }}
               animate={
@@ -149,7 +153,7 @@ export function Preloader() {
                   : {
                       scaleX: {
                         duration: reduceMotion ? 0.3 : 0.7,
-                        delay: reduceMotion ? 0 : 0.6,
+                        delay: reduceMotion ? 0 : D_RULE,
                         ease: EXPO_OUT,
                       },
                     }
@@ -157,14 +161,15 @@ export function Preloader() {
               style={{ willChange: "transform, opacity" }}
             />
 
+            {/* Hindi tagline, quieter than the lockup */}
             <motion.p
               lang="hi"
-              className="hindi mt-4 text-saffron tracking-[0.08em] text-[clamp(0.95rem,1.6vw,1.3rem)]"
+              className="hindi mt-4 text-paper/70 tracking-[0.06em] text-[clamp(0.85rem,1.3vw,1.1rem)]"
               initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
               animate={!started ? undefined : { opacity: 1, y: 0 }}
               transition={{
                 duration: reduceMotion ? 0.3 : 0.8,
-                delay: reduceMotion ? 0 : 0.45,
+                delay: reduceMotion ? 0 : D_TAGLINE,
                 ease: EXPO_OUT,
               }}
             >

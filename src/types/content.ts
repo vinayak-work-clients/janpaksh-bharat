@@ -17,6 +17,9 @@ export interface Post {
   standfirst?: string;
   excerpt: string;
   body?: Block[];
+  /** Section slug from src/config/sections.ts (region or topic). */
+  section: string;
+  /** Finer topical label shown as the kicker ("Environment", "Economy"). */
   category: string;
   tags: string[];
   coverImage: string;

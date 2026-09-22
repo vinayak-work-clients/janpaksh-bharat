@@ -16,6 +16,18 @@ export function getLivePostsByType(type: PostType): Post[] {
   return getLivePosts().filter((p) => p.type === type);
 }
 
+/** Live posts in a section (region or topic slug), newest first. */
+export function getPostsBySection(slug: string): Post[] {
+  return getLivePosts().filter((p) => p.section === slug);
+}
+
+/** Other live posts from the same section, newest first. */
+export function getMoreInSection(post: Post, n = 3): Post[] {
+  return getPostsBySection(post.section)
+    .filter((p) => p.id !== post.id)
+    .slice(0, n);
+}
+
 export interface HomeFeed {
   lead: Post | null;
   secondary: Post[];

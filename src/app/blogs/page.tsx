@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import type { Post, PostType } from "@/types/content";
 import { getLivePosts } from "@/lib/posts";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/PageHero";
 import { FilterTabs } from "@/components/FilterTabs";
 import { PostCard } from "@/components/cards/PostCard";
@@ -17,6 +18,19 @@ export const metadata: Metadata = {
 };
 
 const TYPES: PostType[] = ["image", "blog", "video", "podcast", "breaking"];
+const IN_FEED_EVERY = 6;
+
+/** StoryRows with an in-feed ad after every six rows (spanning both columns at xl). */
+function withInFeedAds(posts: Post[]): ReactNode[] {
+  const out: ReactNode[] = [];
+  posts.forEach((post, i) => {
+    out.push(<StoryRow key={post.id} post={post} />);
+    if ((i + 1) % IN_FEED_EVERY === 0 && i + 1 < posts.length) {
+      out.push(<AdSlot key={`ad-${i}`} slot="listing.inFeed" className="py-8 xl:col-span-2" />);
+    }
+  });
+  return out;
+}
 
 interface Props {
   searchParams: { type?: string; tag?: string };
@@ -58,7 +72,11 @@ export default function BlogsPage({ searchParams }: Props) {
         )}
       </PageHero>
 
-      <section className="container-editorial py-16 md:py-24" aria-live="polite">
+      <div className="container-editorial pt-8">
+        <AdSlot slot="listing.top" priority />
+      </div>
+
+      <section className="container-editorial py-12 md:py-16" aria-live="polite">
         {posts.length === 0 ? (
           <div className="py-16 text-center">
             <p className="font-serif text-h2 text-ink">Nothing here yet.</p>
@@ -95,10 +113,8 @@ export default function BlogsPage({ searchParams }: Props) {
                 <div className="hairline pt-4">
                   <Kicker dot>All stories</Kicker>
                 </div>
-                <LoadMore pageSize={12} className="grid gap-x-12 xl:grid-cols-2">
-                  {list.map((post) => (
-                    <StoryRow key={post.id} post={post} />
-                  ))}
+                <LoadMore pageSize={IN_FEED_EVERY * 2 + 2} className="grid gap-x-12 xl:grid-cols-2">
+                  {withInFeedAds(list)}
                 </LoadMore>
               </div>
             )}

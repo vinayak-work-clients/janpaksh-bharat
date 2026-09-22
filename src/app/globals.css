@@ -16,6 +16,7 @@
 
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
   --header-height: 4.5rem;
+  --section-nav-height: 3rem;
 }
 
 @layer base {
@@ -93,6 +94,15 @@
     font-family: var(--font-hindi-sans), var(--font-sans), sans-serif;
     line-height: 1.6;
     letter-spacing: 0;
+  }
+
+  /* Brand lockup face (Noto Serif Devanagari 700). Line 1 of the wordmark. */
+  .hindi-display {
+    font-family: var(--font-hindi-display), var(--font-hindi-serif), serif;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-feature-settings: normal;
   }
 
   .text-display.hindi,

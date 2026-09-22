@@ -35,15 +35,6 @@ export const siteConfig = {
     { label: "Team", href: "/team" },
     { label: "Contact", href: "/contact" },
   ],
-  sections: [
-    { label: "Politics", href: "/breaking" },
-    { label: "Economy", href: "/blogs" },
-    { label: "Society", href: "/blogs" },
-    { label: "Environment", href: "/blogs" },
-    { label: "Culture", href: "/blogs" },
-    { label: "Sports", href: "/blogs" },
-    { label: "Technology", href: "/blogs" },
-  ],
   legal: [
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },

@@ -3,6 +3,7 @@ import {
   Fraunces,
   Inter,
   Noto_Sans_Devanagari,
+  Noto_Serif_Devanagari,
   Tiro_Devanagari_Hindi,
 } from "next/font/google";
 import { siteConfig } from "@/config/site";
@@ -47,6 +48,14 @@ const notoHindi = Noto_Sans_Devanagari({
   variable: "--font-hindi-sans",
 });
 
+// Brand lockup face: "जनपक्ष भारत" in the logo, preloader and footer wordmark.
+const notoSerifHindi = Noto_Serif_Devanagari({
+  subsets: ["devanagari"],
+  weight: "700",
+  display: "swap",
+  variable: "--font-hindi-display",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -57,7 +66,7 @@ export const metadata: Metadata = {
   applicationName: siteConfig.name,
   openGraph: {
     type: "website",
-    siteName: siteConfig.name,
+    siteName: `${siteConfig.nameHindi} · ${siteConfig.name}`,
     title: `${siteConfig.name} – ${siteConfig.tagline}`,
     description: siteConfig.description,
     locale: "en_IN",
@@ -81,7 +90,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${tiroHindi.variable} ${notoHindi.variable}`}
+      className={`${fraunces.variable} ${inter.variable} ${tiroHindi.variable} ${notoHindi.variable} ${notoSerifHindi.variable}`}
     >
       <body className="flex min-h-screen flex-col">
         <a href="#main" className="skip-link">

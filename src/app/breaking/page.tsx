@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getLiveBreaking, getLivePosts } from "@/lib/posts";
 import { formatDate } from "@/lib/utils";
+import { AdSlot } from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/PageHero";
 import { Kicker } from "@/components/ui/Kicker";
 import { Button } from "@/components/ui/Button";
@@ -72,7 +73,11 @@ export default function BreakingPage() {
         description="Developing stories, updated as they happen. Every entry is verified by the desk before it appears here."
       />
 
-      <section className="container-editorial py-16 md:py-24">
+      <div className="container-editorial pt-8">
+        <AdSlot slot="listing.top" priority />
+      </div>
+
+      <section className="container-editorial py-12 md:py-16">
         <div className="grid gap-16 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-8">
             <ol className="relative border-l border-rule pl-0 [&>li]:-ml-px">

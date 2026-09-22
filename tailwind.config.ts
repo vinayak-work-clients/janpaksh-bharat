@@ -44,6 +44,7 @@ const config: Config = {
         ],
         "hindi-serif": ["var(--font-hindi-serif)", "var(--font-serif)", "serif"],
         "hindi-sans": ["var(--font-hindi-sans)", "var(--font-sans)", "sans-serif"],
+        "hindi-display": ["var(--font-hindi-display)", "var(--font-hindi-serif)", "serif"],
       },
       fontSize: {
         display: [

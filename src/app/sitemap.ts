@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
+import { sections, sectionHref } from "@/config/sections";
 import { getLivePosts } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -11,6 +12,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "/" ? 1 : 0.7,
   }));
 
+  const sectionRoutes = sections.map((s) => ({
+    url: `${SITE_URL}${sectionHref(s.slug)}`,
+    lastModified: new Date(),
+    changeFrequency: "hourly" as const,
+    priority: 0.8,
+  }));
+
   const posts = getLivePosts().map((p) => ({
     url: `${SITE_URL}/news/${p.slug}`,
     lastModified: new Date(p.publishedAt),
@@ -18,5 +26,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: p.isBreaking ? 0.9 : 0.8,
   }));
 
-  return [...staticRoutes, ...posts];
+  return [...staticRoutes, ...sectionRoutes, ...posts];
 }

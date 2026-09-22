@@ -4,8 +4,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
-import { getLivePostBySlug, getLivePosts, getRelatedPosts } from "@/lib/posts";
+import { getSection, sectionHref } from "@/config/sections";
+import { getLivePostBySlug, getLivePosts, getMoreInSection, getRelatedPosts } from "@/lib/posts";
 import { cn, formatDate, formatDuration, timeAgo } from "@/lib/utils";
+import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { ArticleBody } from "@/components/ArticleBody";
 import { ShareBar } from "@/components/ShareBar";
 import { ReadingProgress } from "@/components/ReadingProgress";
@@ -123,8 +125,10 @@ export default function NewsArticlePage({ params }: Props) {
   if (!post) notFound();
 
   const related = getRelatedPosts(post, 3);
-  const moreIn = getRelatedPosts(post, 6).filter((p) => p.category === post.category).slice(0, 3);
+  const section = getSection(post.section);
+  const moreIn = getMoreInSection(post, 3);
   const rail = moreIn.length >= 2 ? moreIn : related;
+  const railLabel = moreIn.length >= 2 && section ? `More in ${section.name}` : "Read next";
   const tone = post.isBreaking ? "breaking" : "saffron";
 
   return (
@@ -136,7 +140,17 @@ export default function NewsArticlePage({ params }: Props) {
         <header className="container-editorial pb-10 pt-12 sm:pt-16 lg:pb-14">
           <div className="flex flex-wrap items-center gap-3">
             <TypeBadge type={post.type} />
-            <Kicker tone={post.isBreaking ? "breaking" : "muted"}>{post.category}</Kicker>
+            <Kicker tone={post.isBreaking ? "breaking" : "muted"}>
+              {section && (
+                <>
+                  <Link href={sectionHref(section.slug)} className="text-ink transition-colors hover:text-saffron-dark">
+                    {section.name}
+                  </Link>
+                  <span aria-hidden="true" className="text-rule">·</span>
+                </>
+              )}
+              {post.category}
+            </Kicker>
           </div>
           <h1
             className={cn(
@@ -196,7 +210,11 @@ export default function NewsArticlePage({ params }: Props) {
 
             <div id="article-body" className="order-1 lg:order-2 lg:col-span-8">
               {post.body && post.body.length > 0 ? (
-                <ArticleBody blocks={post.body} />
+                <ArticleBody
+                  blocks={post.body}
+                  insert={<AdSlot slot="article.inBody" align="start" />}
+                  insertAfter={3}
+                />
               ) : (
                 <p className="font-sans text-[1.125rem] leading-[1.75] text-ink">{post.excerpt}</p>
               )}
@@ -214,8 +232,8 @@ export default function NewsArticlePage({ params }: Props) {
             </div>
 
             <aside className="order-3 lg:col-span-3">
-              <div className="lg:sticky lg:top-28">
-                <Kicker dot>More in {post.category}</Kicker>
+              <AdRail slot="article.rail">
+                <Kicker dot>{railLabel}</Kicker>
                 <ol className="hairline mt-3 divide-y divide-rule">
                   {rail.map((p) => (
                     <li key={p.id} className="group py-4">
@@ -237,14 +255,18 @@ export default function NewsArticlePage({ params }: Props) {
                     WhatsApp
                   </Button>
                 </div>
-              </div>
+              </AdRail>
             </aside>
           </div>
         </div>
 
+        <div className="container-editorial mt-16 lg:mt-20">
+          <AdSlot slot="article.belowBody" />
+        </div>
+
         {/* Read next */}
         {related.length > 0 && (
-          <section aria-labelledby="read-next" className="container-editorial mt-20 lg:mt-28">
+          <section aria-labelledby="read-next" className="container-editorial mt-16 lg:mt-20">
             <SectionHeading id="read-next" kicker="Read next" title="Keep going" viewAllHref="/blogs" viewAllLabel="All stories" />
             <div className="mt-10 grid gap-8 md:grid-cols-3">
               {related.map((p, i) => (

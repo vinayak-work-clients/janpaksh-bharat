@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getLivePostsByType } from "@/lib/posts";
 import { formatDate, formatDuration } from "@/lib/utils";
+import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/PageHero";
 import { Kicker } from "@/components/ui/Kicker";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +23,7 @@ const HERO = "https://images.unsplash.com/photo-1589903308904-1010c2294adc?auto=
 
 export default function PodcastsPage() {
   const episodes = getLivePostsByType("podcast");
-  const [latest, ...others] = episodes;
+  const [latest] = episodes;
 
   return (
     <>
@@ -43,6 +44,10 @@ export default function PodcastsPage() {
           ))}
         </div>
       </PageHero>
+
+      <div className="container-editorial pt-8">
+        <AdSlot slot="listing.top" priority />
+      </div>
 
       {latest && (
         <section aria-labelledby="latest-episode" className="container-editorial py-16 md:py-24">
@@ -75,15 +80,21 @@ export default function PodcastsPage() {
       <section aria-labelledby="all-episodes" className="bg-paper-2 py-16 md:py-24">
         <div className="container-editorial">
           <SectionHeading id="all-episodes" kicker="Archive" title="All episodes" />
-          <Reveal className="mt-8">
-            {episodes.length > 0 ? <EpisodeList episodes={episodes} /> : <p className="font-serif text-h3 text-ink">No episodes live right now.</p>}
-          </Reveal>
-          {episodes.length < 4 && (
-            <p className="mt-6 font-sans text-[0.9rem] text-muted">
-              New episodes every week. Older episodes archive 30 days after release — subscribe on your player to keep them.
-            </p>
-          )}
-          {others.length === 0 && episodes.length === 1 && null}
+          <div className="mt-8 grid gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-8">
+              <Reveal>
+                {episodes.length > 0 ? <EpisodeList episodes={episodes} /> : <p className="font-serif text-h3 text-ink">No episodes live right now.</p>}
+              </Reveal>
+              {episodes.length < 4 && (
+                <p className="mt-6 font-sans text-[0.9rem] text-muted">
+                  New episodes every week. Older episodes archive 30 days after release — subscribe on your player to keep them.
+                </p>
+              )}
+            </div>
+            <aside className="lg:col-span-4">
+              <AdRail slot="podcast.rail" />
+            </aside>
+          </div>
         </div>
       </section>
 
