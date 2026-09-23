@@ -39,11 +39,10 @@ export interface HomeFeed {
 }
 
 /**
- * Deterministic arrangement of the front page.
- * Sorting is by publishedAt so the same data always yields the same layout.
+ * Deterministic arrangement of the front page from an already-sorted list of
+ * live posts (newest first). Pure: used by both the mock and Supabase paths.
  */
-export function getHomeFeed(): HomeFeed {
-  const live = getLivePosts();
+export function arrangeHomeFeed(live: Post[]): HomeFeed {
   const used = new Set<string>();
   const take = (candidates: Post[], n: number): Post[] => {
     const out: Post[] = [];
@@ -109,12 +108,16 @@ export function getHomeFeed(): HomeFeed {
   };
 }
 
+/** Front page from the mock data. */
+export function getHomeFeed(): HomeFeed {
+  return arrangeHomeFeed(getLivePosts());
+}
+
 /**
- * Stories for the hero news deck: breaking first, then the latest, with no
- * duplicates. Returns fewer than `n` only when fewer live posts exist.
+ * Stories for the hero news deck from an already-sorted live list: breaking
+ * first, then the latest, no duplicates. Pure.
  */
-export function getHeroDeck(n = 6): Post[] {
-  const live = getLivePosts();
+export function pickHeroDeck(live: Post[], n = 6): Post[] {
   const seen = new Set<string>();
   const out: Post[] = [];
   for (const p of [...live.filter((p) => p.isBreaking), ...live]) {
@@ -124,6 +127,11 @@ export function getHeroDeck(n = 6): Post[] {
     out.push(p);
   }
   return out;
+}
+
+/** Hero news deck from the mock data (≤ n, fewer only when fewer live posts exist). */
+export function getHeroDeck(n = 6): Post[] {
+  return pickHeroDeck(getLivePosts(), n);
 }
 
 /** Live post by slug (archived posts 404). */

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { contactSchema } from "@/lib/contact-schema";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
@@ -25,13 +26,24 @@ export async function POST(req: Request) {
   }
 
   const { name, email, phone, topic, message } = parsed.data;
-  const payload = { name, email, phone: phone || undefined, topic, message };
 
-  // TODO(Phase 6): deliver via email (Resend/SES) and persist to a sheet/CRM.
-  console.log("[contact] new submission", {
-    ...payload,
-    receivedAt: new Date().toISOString(),
-  });
+  // Persist with the service role: contact_messages has no anon policy, so
+  // the browser can never read or write it directly.
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("contact_messages")
+      .insert({ name, email, phone: phone || null, topic, message });
+    if (error) throw new Error(error.message);
+  } catch (e) {
+    console.error("[contact] failed to persist submission", e instanceof Error ? e.message : e);
+    return NextResponse.json(
+      { ok: false, error: "We couldn't save your message just now. Please try again or email us directly." },
+      { status: 503 },
+    );
+  }
+
+  // TODO(Phase 6): deliver via email (Resend/SES) in addition to the database row.
 
   return NextResponse.json({ ok: true });
 }
