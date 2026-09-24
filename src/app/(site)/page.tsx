@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { siteConfig } from "@/config/site";
 import { getSection } from "@/config/sections";
-import { getHeroDeck, getHomeFeed, getLivePosts, getPostsBySection } from "@/lib/posts";
+import { getSiteSettings } from "@/lib/data/settings";
+import { getHeroDeck, getHomeFeed, getLatestPosts, getLivePostsBySection } from "@/lib/data/posts";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Hero } from "@/components/home/Hero";
 import { RegionsBlock, type RegionColumnData } from "@/components/home/RegionsBlock";
@@ -12,23 +12,30 @@ import { WatchStrip } from "@/components/home/WatchStrip";
 import { ListenBand } from "@/components/home/ListenBand";
 import { ConnectBand } from "@/components/home/ConnectBand";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: { absolute: `${siteConfig.name} – ${siteConfig.tagline}` },
-  description: siteConfig.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteSettings();
+  return {
+    title: { absolute: `${s.name} – ${s.tagline}` },
+    description: s.description,
+  };
+}
 
 // Regional columns: the first three show at lg, all five at xl.
 const REGION_COLUMNS = ["uttar-pradesh", "uttarakhand", "delhi-ncr", "national", "international"];
 
-export default function HomePage() {
-  const feed = getHomeFeed();
-  const latest = getLivePosts().slice(0, 3);
-  const deck = getHeroDeck(siteConfig.hero.deckSize);
-  const regions: RegionColumnData[] = REGION_COLUMNS.flatMap((slug) => {
+export default async function HomePage() {
+  const settings = await getSiteSettings();
+  const [feed, latest, deck, regionPosts] = await Promise.all([
+    getHomeFeed(),
+    getLatestPosts(3),
+    getHeroDeck(settings.hero.deckSize),
+    Promise.all(REGION_COLUMNS.map((slug) => getLivePostsBySection(slug))),
+  ]);
+  const regions: RegionColumnData[] = REGION_COLUMNS.flatMap((slug, i) => {
     const section = getSection(slug);
-    return section ? [{ section, posts: getPostsBySection(slug).slice(0, 4) }] : [];
+    return section ? [{ section, posts: regionPosts[i].slice(0, 4) }] : [];
   });
 
   return (

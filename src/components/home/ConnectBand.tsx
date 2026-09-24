@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { getSiteSettings } from "@/lib/data/settings";
 import type { Post } from "@/types/content";
 import { Button } from "@/components/ui/Button";
 import { Kicker } from "@/components/ui/Kicker";
@@ -23,7 +23,8 @@ function Bubble({ title, time, className, delay }: { title: string; time: string
   );
 }
 
-export function ConnectBand({ samples }: { samples: Post[] }) {
+export async function ConnectBand({ samples }: { samples: Post[] }) {
+  const { cta, socials } = await getSiteSettings();
   const bubbles = samples.slice(0, 3);
   return (
     <section aria-labelledby="connect-heading" className="relative overflow-hidden bg-saffron py-16 text-ink md:py-24">
@@ -32,7 +33,7 @@ export function ConnectBand({ samples }: { samples: Post[] }) {
         <Reveal className="lg:col-span-7">
           <Kicker tone="ink" className="text-ink/70">
             <span className="h-1.5 w-1.5 rounded-full bg-ink" aria-hidden="true" />
-            {siteConfig.cta.whatsappLabel}
+            {cta.whatsappLabel}
           </Kicker>
           <h2 id="connect-heading" className="mt-4 max-w-[12ch] font-serif text-display text-ink">
             Don&rsquo;t just read the news. Be part of it.
@@ -43,15 +44,15 @@ export function ConnectBand({ samples }: { samples: Post[] }) {
             which stories to chase next.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Button href={siteConfig.socials.whatsapp} external variant="secondary" size="lg" className="hover:bg-paper hover:border-paper">
+            <Button href={socials.whatsapp} external variant="secondary" size="lg" className="hover:bg-paper hover:border-paper">
               <WhatsAppIcon className="h-[18px] w-[18px]" />
-              {siteConfig.cta.whatsappLabel}
+              {cta.whatsappLabel}
             </Button>
             <Link
-              href={siteConfig.cta.primary.href}
+              href={cta.primary.href}
               className="group inline-flex items-center gap-1.5 font-sans text-[0.95rem] font-medium text-ink underline-offset-4 hover:underline"
             >
-              {siteConfig.cta.primary.label}
+              {cta.primary.label}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 ease-expo-out group-hover:translate-x-1" aria-hidden="true" />
             </Link>
           </div>

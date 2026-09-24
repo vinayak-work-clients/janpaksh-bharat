@@ -2,6 +2,8 @@ import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { adSizes, adSlots, type AdCreative, type AdSizeKey, type AdSlotKey } from "@/config/ads";
 import { pickDeterministic } from "@/lib/ads-pick";
+import { getAdsForSlot } from "@/lib/data/ads";
+import { getSiteSettings } from "@/lib/data/settings";
 import { cn } from "@/lib/utils";
 
 /** A creative from the ads table (or the config), with its rotation weight. */
@@ -15,9 +17,9 @@ interface AdSlotProps {
   /** Above-the-fold slots load eagerly; everything else is lazy. */
   priority?: boolean;
   /**
-   * Creatives to rotate between (Phase 6 passes the ads table here). When
-   * given, one is chosen by weight, deterministically per request; an empty
-   * list hides the slot. Omitted → the config's dummy creative (today's behaviour).
+   * Creatives to rotate between. When omitted the slot fetches its own
+   * active creatives from the ads table (cached, tag "ads"). One is chosen
+   * by weight, deterministically per request; an empty list hides the slot.
    */
   creatives?: SlotCreative[];
 }
@@ -73,19 +75,29 @@ function Frame({
   );
 }
 
+/** Active creatives for a slot, or none when ads are switched off in settings. */
+export async function resolveSlotCreatives(slot: AdSlotKey): Promise<SlotCreative[]> {
+  const [settings, ads] = await Promise.all([getSiteSettings(), getAdsForSlot(slot)]);
+  if (!settings.adsEnabled) return [];
+  return ads;
+}
+
 /**
- * Renders an advertisement slot by key. Disabled slots render nothing (and
- * reserve no space). A slot with `mobileSize` / `tabletSize` swaps creatives
- * by breakpoint; each breakpoint's frame is present in the DOM but only one
- * is displayed, so the reserved height is always correct.
+ * Renders an advertisement slot by key from the live creatives. Hidden (and
+ * reserving no space) when ads are off in the site settings, the slot is
+ * disabled in config, or no creative is active. A slot with `mobileSize` /
+ * `tabletSize` swaps creatives by breakpoint; each breakpoint's frame is in
+ * the DOM but only one is displayed, so the reserved height is always right.
  */
-export function AdSlot({ slot, className, align = "center", priority = false, creatives }: AdSlotProps) {
+export async function AdSlot({ slot, className, align = "center", priority = false, creatives }: AdSlotProps) {
   const config = adSlots[slot];
   if (!config?.enabled) return null;
 
-  const { size, tabletSize, mobileSize } = config;
-  const creative = creatives ? pickDeterministic(creatives.map((c) => ({ ...c, weight: c.weight ?? 1 })), slot) : config.creative;
+  const pool = creatives ?? (await resolveSlotCreatives(slot));
+  const creative = pickDeterministic(pool.map((c) => ({ ...c, weight: c.weight ?? 1 })), slot);
   if (!creative) return null;
+
+  const { size, tabletSize, mobileSize } = config;
   const srcFor = (s: AdSizeKey) => (s === size ? creative.src : (creative.srcBySize?.[s] ?? creative.src));
 
   // Visibility classes per breakpoint so exactly one frame is displayed.
@@ -152,13 +164,16 @@ interface AdRailProps {
  * are desktop-only; below lg they are not rendered at all, so no space is
  * reserved. Pass the rest of the rail as children to keep one sticky block.
  */
-export function AdRail({ slot, className, children }: AdRailProps) {
+export async function AdRail({ slot, className, children }: AdRailProps) {
+  const creatives = adSlots[slot]?.enabled ? await resolveSlotCreatives(slot) : [];
   return (
     <div className={cn("lg:sticky lg:top-28", className)}>
-      <div className="hidden lg:block">
-        <AdSlot slot={slot} align="start" />
-      </div>
-      {children && <div className={cn(adSlots[slot]?.enabled && "lg:mt-8")}>{children}</div>}
+      {creatives.length > 0 && (
+        <div className="hidden lg:block">
+          <AdSlot slot={slot} align="start" creatives={creatives} />
+        </div>
+      )}
+      {children && <div className={cn(creatives.length > 0 && "lg:mt-8")}>{children}</div>}
     </div>
   );
 }

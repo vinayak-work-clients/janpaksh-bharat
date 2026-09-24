@@ -2,7 +2,8 @@
  * Post reads for public pages. Every function branches on DATA_SOURCE:
  *   "supabase" → live_posts view through the anon client (RLS hides expired)
  *   otherwise  → the existing mock helpers in src/lib/posts.ts
- * Pages keep importing from src/lib/posts.ts until Phase 6 switches them here.
+ * Every public page reads through here (Phase 6); src/lib/posts.ts holds the
+ * pure arrangement helpers and the mock fallback.
  */
 import type { Post, PostType } from "@/types/content";
 import * as mock from "@/lib/posts";
@@ -110,6 +111,11 @@ export async function getLivePostsBySection(slug: string): Promise<Post[]> {
 
 export async function getBreakingPosts(): Promise<Post[]> {
   return dataSource() === "supabase" ? fetchBreakingPosts() : mock.getLiveBreaking();
+}
+
+/** The n newest live posts. */
+export async function getLatestPosts(n: number): Promise<Post[]> {
+  return (await getLivePosts()).slice(0, n);
 }
 
 export async function getHomeFeed(): Promise<HomeFeed> {

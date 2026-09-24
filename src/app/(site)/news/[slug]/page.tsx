@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLivePostBySlug, getLivePosts, getMoreInSection, getRelatedPosts } from "@/lib/posts";
+import { getLivePostBySlug, getLivePosts, getMoreInSection, getRelatedPosts } from "@/lib/data/posts";
 import { ArticleView } from "@/components/article/ArticleView";
 
 interface Props {
   params: { slug: string };
 }
 
-export function generateStaticParams() {
-  return getLivePosts().map((p) => ({ slug: p.slug }));
+export const revalidate = 60;
+/** Posts published after the build render on first request, then cache. */
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const posts = await getLivePosts();
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const post = getLivePostBySlug(params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = await getLivePostBySlug(params.slug);
   if (!post) return { title: "Story not found" };
   return {
     title: post.title,
     description: post.standfirst ?? post.excerpt,
+    alternates: { canonical: `/news/${post.slug}` },
     openGraph: {
       type: "article",
       title: post.title,
@@ -28,9 +34,11 @@ export function generateMetadata({ params }: Props): Metadata {
   };
 }
 
-export default function NewsArticlePage({ params }: Props) {
-  const post = getLivePostBySlug(params.slug);
+export default async function NewsArticlePage({ params }: Props) {
+  // live_posts only returns published, unexpired rows: drafts and archived stories 404.
+  const post = await getLivePostBySlug(params.slug);
   if (!post) notFound();
 
-  return <ArticleView post={post} related={getRelatedPosts(post, 3)} moreIn={getMoreInSection(post, 3)} />;
+  const [related, moreIn] = await Promise.all([getRelatedPosts(post, 3), getMoreInSection(post, 3)]);
+  return <ArticleView post={post} related={related} moreIn={moreIn} />;
 }

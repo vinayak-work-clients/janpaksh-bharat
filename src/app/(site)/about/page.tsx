@@ -4,13 +4,16 @@ import Link from "next/link";
 import { Search, Send, ShieldCheck } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { team } from "@/data/team";
-import { getLiveBreaking } from "@/lib/posts";
+import { getSiteSettings } from "@/lib/data/settings";
+import { getBreakingPosts } from "@/lib/data/posts";
 import { PageHero } from "@/components/PageHero";
 import { Kicker } from "@/components/ui/Kicker";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/motion/Reveal";
 import { ConnectBand } from "@/components/home/ConnectBand";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "About",
@@ -25,13 +28,15 @@ const steps = [
   { Icon: ShieldCheck, title: "Publish", text: "Bilingual, labelled, live for thirty days. Corrections go at the top, with a date." },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // The mission, story, values and stats stay in code (not dashboard-editable).
   const { about } = siteConfig;
+  const [settings, breaking] = await Promise.all([getSiteSettings(), getBreakingPosts()]);
   const teaser = team.slice(0, 3);
 
   return (
     <>
-      <PageHero variant="image" image={HERO} eyebrow="About" title={siteConfig.taglineEn} titleHindi={siteConfig.tagline} description={about.mission} />
+      <PageHero variant="image" image={HERO} eyebrow="About" title={settings.taglineEn} titleHindi={settings.tagline} description={about.mission} />
 
       {/* Manifesto */}
       <section className="container-editorial py-16 md:py-24" aria-labelledby="manifesto">
@@ -128,7 +133,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <ConnectBand samples={getLiveBreaking()} />
+      <ConnectBand samples={breaking} />
     </>
   );
 }

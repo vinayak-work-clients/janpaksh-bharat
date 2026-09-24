@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { getBreakingPosts } from "@/data/mock-posts";
+import { getBreakingPosts } from "@/lib/data/posts";
+import { getSiteSettings } from "@/lib/data/settings";
 
-export function BreakingTicker() {
-  const posts = getBreakingPosts();
+/** Red marquee of live breaking stories; hidden by the "Breaking ticker" switch in settings. */
+export async function BreakingTicker() {
+  const settings = await getSiteSettings();
+  if (!settings.tickerEnabled) return null;
+  const posts = await getBreakingPosts();
   if (posts.length === 0) return null;
 
   // Duplicate the list so the marquee loops seamlessly at -50%.

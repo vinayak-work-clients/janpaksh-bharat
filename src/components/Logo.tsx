@@ -21,6 +21,9 @@ interface LogoProps {
   imageSrc?: string;
   /** Variant for ink surfaces (tone="paper"); falls back to `imageSrc`. */
   imageSrcDark?: string;
+  /** Wordmark text from the site settings; siteConfig when omitted. */
+  name?: string;
+  nameHindi?: string;
 }
 
 /**
@@ -82,6 +85,8 @@ export function Logo({
   size = "nav",
   imageSrc,
   imageSrcDark,
+  name = siteConfig.name,
+  nameHindi = siteConfig.nameHindi,
 }: LogoProps) {
   const m = metrics[size];
   const paper = tone === "paper";
@@ -101,7 +106,7 @@ export function Logo({
         style={{ height: m.imagePx, width: "auto" }}
       />
       <span className="sr-only">
-        {siteConfig.nameHindi} · {siteConfig.name}
+        {nameHindi} · {name}
       </span>
     </>
   ) : (
@@ -116,7 +121,7 @@ export function Logo({
             paper ? "text-paper" : "text-ink",
           )}
         >
-          {siteConfig.nameHindi}
+          {nameHindi}
         </span>
         <span
           className={cn(
@@ -125,7 +130,7 @@ export function Logo({
             paper ? "text-paper" : "text-saffron",
           )}
         >
-          {siteConfig.name}
+          {name}
         </span>
       </span>
     </>
@@ -145,7 +150,7 @@ export function Logo({
   return (
     <Link
       href="/"
-      aria-label={`${siteConfig.nameHindi} · ${siteConfig.name} — home`}
+      aria-label={`${nameHindi} · ${name} — home`}
       className={base}
     >
       {content}

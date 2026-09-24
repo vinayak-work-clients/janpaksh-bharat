@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { sections, sectionHref } from "@/config/sections";
-import { getLivePosts } from "@/lib/posts";
+import { getLivePosts } from "@/lib/data/posts";
 import { SITE_URL } from "@/lib/site-url";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 60;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [...siteConfig.nav.map((n) => n.href), "/privacy", "/terms"].map((path) => ({
     url: `${SITE_URL}${path === "/" ? "" : path}`,
     lastModified: new Date(),
@@ -19,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  const posts = getLivePosts().map((p) => ({
+  const posts = (await getLivePosts()).map((p) => ({
     url: `${SITE_URL}/news/${p.slug}`,
     lastModified: new Date(p.publishedAt),
     changeFrequency: "daily" as const,

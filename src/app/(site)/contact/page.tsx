@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { getSiteSettings } from "@/lib/data/settings";
 import { faqs } from "@/data/faq";
 import { PageHero } from "@/components/PageHero";
 import { Kicker } from "@/components/ui/Kicker";
@@ -8,15 +8,19 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { ContactForm } from "@/components/forms/ContactForm";
-import { WhatsAppIcon, socialLinks } from "@/components/icons/SocialIcons";
+import { WhatsAppIcon, socialLinksFor } from "@/components/icons/SocialIcons";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Contact",
   description: "Story tips, partnerships, corrections or just to say hello — talk to the Janpaksh Bharat desk.",
 };
 
-export default function ContactPage() {
-  const { contact, about } = siteConfig;
+export default async function ContactPage() {
+  const settings = await getSiteSettings();
+  const { contact, location } = settings;
+  const socialLinks = socialLinksFor(settings.socials);
 
   return (
     <>
@@ -42,10 +46,10 @@ export default function ContactPage() {
                     </a>
                   </li>
                   <li className="inline-flex items-center gap-3 text-ink">
-                    <MapPin className="h-4 w-4 text-muted" aria-hidden="true" /> {about.location}
+                    <MapPin className="h-4 w-4 text-muted" aria-hidden="true" /> {location}
                   </li>
                 </ul>
-                <Button href={siteConfig.socials.whatsapp} external variant="primary" className="mt-7">
+                <Button href={settings.socials.whatsapp} external variant="primary" className="mt-7">
                   <WhatsAppIcon className="h-[18px] w-[18px]" />
                   WhatsApp the desk
                 </Button>

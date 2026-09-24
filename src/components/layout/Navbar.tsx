@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Menu, Search, X } from "lucide-react";
-import { socialLinks } from "@/components/icons/SocialIcons";
+import { socialLinksFor } from "@/components/icons/SocialIcons";
 import { siteConfig } from "@/config/site";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { sections, sectionHref } from "@/config/sections";
 import { cn, formatDate } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
@@ -17,6 +18,9 @@ const SCROLL_THRESHOLD = 40;
 const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
 
 export function Navbar() {
+  const settings = useSiteSettings();
+  const socialLinks = socialLinksFor(settings.socials);
+  const logo = { name: settings.name, nameHindi: settings.nameHindi, imageSrc: settings.logo.url ?? undefined, imageSrcDark: settings.logo.darkUrl ?? undefined };
   const pathname = usePathname();
   const isHome = pathname === "/";
   const reduceMotion = useReducedMotion();
@@ -89,7 +93,7 @@ export function Navbar() {
       >
         <div className="container-editorial flex h-full items-center justify-between gap-6">
           {/* Left: brand lockup */}
-          <Logo tone={tone} size="nav" />
+          <Logo tone={tone} size="nav" {...logo} />
 
           {/* Center: desktop nav */}
           <nav
@@ -156,7 +160,7 @@ export function Navbar() {
             </button>
 
             <Button
-              href={siteConfig.cta.secondary.href}
+              href={settings.cta.secondary.href}
               size="sm"
               variant="secondary"
               className={cn(
@@ -165,7 +169,7 @@ export function Navbar() {
                   "bg-paper text-ink border-paper hover:bg-transparent hover:text-paper",
               )}
             >
-              {siteConfig.cta.secondary.label}
+              {settings.cta.secondary.label}
             </Button>
 
             <button
@@ -202,7 +206,7 @@ export function Navbar() {
             className="fixed inset-0 z-[70] flex flex-col bg-ink text-paper lg:hidden"
           >
             <div className="container-editorial flex h-[var(--header-height)] shrink-0 items-center justify-between">
-              <Logo tone="paper" size="nav" />
+              <Logo tone="paper" size="nav" {...logo} />
               <button
                 ref={closeBtnRef}
                 type="button"
@@ -293,7 +297,7 @@ export function Navbar() {
               transition={{ delay: reduceMotion ? 0 : 0.5, duration: 0.5 }}
               className="container-editorial flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-paper/10 py-6"
             >
-              <p className="hindi text-saffron">{siteConfig.tagline}</p>
+              <p className="hindi text-saffron">{settings.tagline}</p>
               <ul className="flex items-center gap-2">
                 {socialLinks.map(({ label, href, Icon }) => (
                   <li key={label}>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { siteConfig } from "@/config/site";
-import { getLivePostsByType } from "@/lib/posts";
+import { getSiteSettings } from "@/lib/data/settings";
+import { getLivePostsByType } from "@/lib/data/posts";
 import { formatDate, formatDuration } from "@/lib/utils";
 import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/PageHero";
@@ -14,15 +14,17 @@ import { EpisodePlayer } from "@/components/audio/EpisodePlayer";
 import { EpisodeList } from "@/components/audio/EpisodeList";
 import { Reveal } from "@/components/motion/Reveal";
 
-export const metadata: Metadata = {
-  title: `${siteConfig.podcast.showName} — Podcast`,
-  description: siteConfig.podcast.blurb,
-};
+export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { podcast } = await getSiteSettings();
+  return { title: `${podcast.showName} — Podcast`, description: podcast.blurb };
+}
 
 const HERO = "https://images.unsplash.com/photo-1589903308904-1010c2294adc?auto=format&fit=crop&w=2400&q=80";
 
-export default function PodcastsPage() {
-  const episodes = getLivePostsByType("podcast");
+export default async function PodcastsPage() {
+  const [{ podcast, listenOn }, episodes] = await Promise.all([getSiteSettings(), getLivePostsByType("podcast")]);
   const [latest] = episodes;
 
   return (
@@ -31,13 +33,13 @@ export default function PodcastsPage() {
         variant="image"
         image={HERO}
         eyebrow="Podcast"
-        title={siteConfig.podcast.showName}
-        titleHindi={siteConfig.podcast.showNameHindi}
-        description={siteConfig.podcast.blurb}
+        title={podcast.showName}
+        titleHindi={podcast.showNameHindi}
+        description={podcast.blurb}
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className="mr-1 font-sans text-kicker uppercase text-paper/60">Listen on</span>
-          {Object.entries(siteConfig.listenOn).map(([k, v]) => (
+          {Object.entries(listenOn).map(([k, v]) => (
             <a key={k} href={v} className="rounded-full border border-paper/30 px-4 py-1.5 font-sans text-[0.8rem] font-medium capitalize text-paper transition-colors hover:border-paper hover:bg-paper hover:text-ink">
               {k}
             </a>

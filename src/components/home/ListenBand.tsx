@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Post } from "@/types/content";
-import { siteConfig } from "@/config/site";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { cn, formatDuration } from "@/lib/utils";
 import { usePlayer } from "@/components/audio/PlayerProvider";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import { Reveal } from "@/components/motion/Reveal";
 
 export function ListenBand({ podcasts }: { podcasts: Post[] }) {
   const { current, playing, toggle } = usePlayer();
+  const { podcast } = useSiteSettings();
   if (podcasts.length === 0) return null;
 
   return (
@@ -21,12 +22,12 @@ export function ListenBand({ podcasts }: { podcasts: Post[] }) {
         <Reveal className="lg:col-span-1">
           <Kicker dot>Podcast</Kicker>
           <h2 id="listen-heading" className="mt-3 font-serif text-h2 text-ink">
-            {siteConfig.podcast.showName}
+            {podcast.showName}
             <span className="hindi mt-1 block text-[0.6em] font-normal text-saffron-dark">
-              {siteConfig.podcast.showNameHindi}
+              {podcast.showNameHindi}
             </span>
           </h2>
-          <p className="mt-5 max-w-sm font-sans leading-relaxed text-muted">{siteConfig.podcast.blurb}</p>
+          <p className="mt-5 max-w-sm font-sans leading-relaxed text-muted">{podcast.blurb}</p>
           <div className="mt-8">
             <Button href="/podcasts" variant="secondary">
               All episodes

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import type { Post, PostType } from "@/types/content";
-import { getLivePosts } from "@/lib/posts";
+import { getLivePosts } from "@/lib/data/posts";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/PageHero";
 import { FilterTabs } from "@/components/FilterTabs";
@@ -11,6 +11,8 @@ import { StoryRow } from "@/components/cards/StoryRow";
 import { LoadMore } from "@/components/LoadMore";
 import { Reveal } from "@/components/motion/Reveal";
 import { Kicker } from "@/components/ui/Kicker";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Stories",
@@ -36,11 +38,11 @@ interface Props {
   searchParams: { type?: string; tag?: string };
 }
 
-export default function BlogsPage({ searchParams }: Props) {
+export default async function BlogsPage({ searchParams }: Props) {
   const type = TYPES.includes(searchParams.type as PostType) ? (searchParams.type as PostType) : null;
   const tag = searchParams.tag?.trim() || null;
 
-  let posts: Post[] = getLivePosts();
+  let posts: Post[] = await getLivePosts();
   if (type) posts = posts.filter((p) => p.type === type);
   if (tag) posts = posts.filter((p) => p.tags.includes(tag));
 

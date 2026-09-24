@@ -11,7 +11,9 @@
     "db:check": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/check-supabase.ts",
     "ads:placeholders": "node scripts/make-ad-placeholders.mjs",
     "e2e:admin": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-admin-posts.mjs",
-    "e2e:admin-b": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-admin-b.mjs"
+    "e2e:admin-b": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-admin-b.mjs",
+    "test:feed": "tsx scripts/test-home-feed.ts",
+    "e2e:live": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-live.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -31,6 +33,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.88.0",
+    "resend": "^6.28.1",
     "slugify": "^1.6.9",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",

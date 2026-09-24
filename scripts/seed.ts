@@ -8,6 +8,12 @@
  *   matches the mock publishedAt + 30 days.
  * - Upserts the placeholder ad creatives by (slot_key, sponsor_name).
  * Re-runnable: nothing is duplicated.
+ *
+ *   npm run seed -- --wipe
+ *
+ * Deletes every post (and its uploaded files in the media bucket) and every
+ * ad creative first, so the client can start from an empty site before
+ * launch. Site settings and contact messages are left alone.
  */
 import { createClient } from "@supabase/supabase-js";
 import type { Database, AdInsert } from "../src/lib/supabase/types";
@@ -25,6 +31,43 @@ if (!url || !serviceKey) {
 const supabase = createClient<Database>(url, serviceKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
+
+const WIPE = process.argv.includes("--wipe");
+const WIPE_ONLY = process.argv.includes("--wipe-only");
+
+async function wipe() {
+  const { data: rows, error: readError } = await supabase.from("posts").select("id, cover_image_path, media_path, body");
+  if (readError) throw new Error(`posts read: ${readError.message}`);
+  const paths = new Set<string>();
+  for (const r of rows ?? []) {
+    if (r.cover_image_path) paths.add(r.cover_image_path);
+    if (r.media_path) paths.add(r.media_path);
+    for (const b of Array.isArray(r.body) ? r.body : []) {
+      if (b.type === "image" && b.path) paths.add(b.path);
+    }
+  }
+  const { error: postsError } = await supabase.from("posts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  if (postsError) throw new Error(`posts delete: ${postsError.message}`);
+  console.log(`wipe: deleted ${rows?.length ?? 0} posts`);
+
+  const list = Array.from(paths);
+  for (let i = 0; i < list.length; i += 100) {
+    const { error } = await supabase.storage.from("media").remove(list.slice(i, i + 100));
+    if (error) console.warn(`wipe: could not remove some media files: ${error.message}`);
+  }
+  if (list.length) console.log(`wipe: removed ${list.length} media files`);
+
+  const { data: ads, error: adsRead } = await supabase.from("ads").select("id, image_path");
+  if (adsRead) throw new Error(`ads read: ${adsRead.message}`);
+  const adPaths = (ads ?? []).map((a) => a.image_path).filter((p): p is string => Boolean(p));
+  const { error: adsError } = await supabase.from("ads").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  if (adsError) throw new Error(`ads delete: ${adsError.message}`);
+  if (adPaths.length) {
+    const { error } = await supabase.storage.from("branding").remove(adPaths);
+    if (error) console.warn(`wipe: could not remove some creative files: ${error.message}`);
+  }
+  console.log(`wipe: deleted ${ads?.length ?? 0} ad creatives`);
+}
 
 async function seedPosts() {
   // created_at = publishedAt so the 30-day window mirrors the mock dates.
@@ -72,6 +115,11 @@ async function seedAds() {
 
 (async () => {
   try {
+    if (WIPE || WIPE_ONLY) await wipe();
+    if (WIPE_ONLY) {
+      console.log("\nWipe complete (nothing seeded).");
+      return;
+    }
     await seedPosts();
     await seedAds();
     console.log("\nSeed complete.");

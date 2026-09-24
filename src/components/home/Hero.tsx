@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { siteConfig } from "@/config/site";
 import type { Post } from "@/types/content";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { usePreloader } from "@/components/PreloaderProvider";
 import { Button } from "@/components/ui/Button";
 import { Kicker } from "@/components/ui/Kicker";
@@ -22,7 +22,7 @@ interface HeroProps {
 /* ------------------------------------------------------------------ */
 
 function HeroBackdrop() {
-  const { hero } = siteConfig;
+  const { hero } = useSiteSettings();
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-ink">
       {hero.background === "wash" && (
@@ -104,6 +104,7 @@ function SplitHeadline({ text, play }: { text: string; play: boolean }) {
 /* ------------------------------------------------------------------ */
 
 export function Hero({ deck }: HeroProps) {
+  const settings = useSiteSettings();
   const { done } = usePreloader();
   const reduceMotion = useReducedMotion();
 
@@ -131,31 +132,31 @@ export function Hero({ deck }: HeroProps) {
         <div className="relative z-10 lg:col-span-5">
           <motion.div {...fade(0)}>
             <Kicker tone="paper" dot className="text-[0.68rem] text-paper/70 sm:text-kicker">
-              {siteConfig.hero.kicker}
+              {settings.hero.kicker}
             </Kicker>
           </motion.div>
 
-          <SplitHeadline text={siteConfig.tagline} play={done} />
+          <SplitHeadline text={settings.tagline} play={done} />
 
           <motion.p
             {...fade(0.55)}
             className="mt-4 max-w-xl font-serif text-h3 font-normal italic text-paper/75"
           >
-            {siteConfig.taglineEn}
+            {settings.taglineEn}
           </motion.p>
 
           <motion.div {...fade(0.7)} className="mt-8 flex flex-wrap items-center gap-3 sm:mt-10">
-            <Button href={siteConfig.cta.primary.href} variant="primary" size="lg">
-              {siteConfig.cta.primary.label}
+            <Button href={settings.cta.primary.href} variant="primary" size="lg">
+              {settings.cta.primary.label}
             </Button>
             <Button
-              href={siteConfig.socials.whatsapp}
+              href={settings.socials.whatsapp}
               external
               variant="ghost"
               size="lg"
               className="group border-paper/40 text-paper hover:border-paper hover:bg-paper/5"
             >
-              {siteConfig.cta.secondary.label}
+              {settings.cta.secondary.label}
               <ArrowRight
                 className="h-4 w-4 transition-transform duration-300 ease-expo-out group-hover:translate-x-1"
                 aria-hidden="true"

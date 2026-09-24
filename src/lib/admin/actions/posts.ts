@@ -59,6 +59,8 @@ function revalidateForPost(row: Pick<PostRow, "id" | "slug" | "section">, previo
     paths.add(`/section/${previous.section}`);
   }
   paths.forEach((p) => revalidatePath(p));
+  // Ticker, hero deck and section rails live in the (site) layout tree.
+  revalidatePath("/", "layout");
 }
 
 async function removeStorage(supabase: Client, paths: string[]): Promise<string | undefined> {

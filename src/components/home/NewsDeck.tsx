@@ -100,6 +100,9 @@ const HIDDEN_POSE: Pose = {
 
 const Z_INDEX = [30, 20, 10] as const;
 
+/** Below this many stories the 3D fan has nothing to fan: show one card. */
+const MIN_DECK = 3;
+
 /* ------------------------------------------------------------------ */
 /*  Hooks                                                              */
 /* ------------------------------------------------------------------ */
@@ -125,6 +128,46 @@ function useDocumentVisible(): boolean {
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
   return visible;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Single-card fallback (fewer than 3 live stories)                    */
+/* ------------------------------------------------------------------ */
+
+function StaticCard({ post, play, className }: { post: Post; play: boolean; className?: string }) {
+  const reduceMotion = useReducedMotion() ?? false;
+  const isBreaking = post.isBreaking || post.type === "breaking";
+  return (
+    <div className={cn("news-deck relative w-full [--card-w:86vw] lg:[--card-w:clamp(360px,34vw,560px)]", className)}>
+      <motion.div
+        className="mx-auto w-[var(--card-w)] max-w-full"
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
+        animate={play ? { opacity: 1, y: 0 } : reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
+        transition={{ duration: reduceMotion ? 0.3 : 0.9, delay: play ? ENTRANCE_DELAY_MS / 1000 : 0, ease: EXPO_OUT }}
+      >
+        <Link
+          href={`/news/${post.slug}`}
+          className="group relative block aspect-[7/4] w-full overflow-hidden rounded-2xl border border-paper/10 bg-ink-soft shadow-[0_30px_60px_-20px_rgb(0_0_0/0.6)]"
+        >
+          <Image src={post.coverImage} alt="" fill priority sizes="(min-width:1024px) 34vw, 90vw" className="object-cover" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,11,15,0.9)_0%,rgba(11,11,15,0)_55%)]" />
+          <TypeBadge type={isBreaking ? "breaking" : post.type} variant="onDark" className="absolute left-4 top-4" />
+          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+            <span className="font-sans text-kicker uppercase text-saffron">{post.category}</span>
+            <h3 className="clamp-2 mt-2 font-serif text-h3 text-paper">{post.title}</h3>
+            <time dateTime={post.publishedAt} suppressHydrationWarning className="mt-2 block font-sans text-[0.75rem] text-paper/60">
+              {timeAgo(post.publishedAt)}
+            </time>
+          </div>
+        </Link>
+        <p className="clamp-2 mt-4 max-w-[48ch] font-sans text-[0.95rem] leading-relaxed text-paper/80">{post.standfirst ?? post.excerpt}</p>
+        <Link href={`/news/${post.slug}`} className="group mt-3 inline-flex items-center gap-2 font-sans text-[0.85rem] font-medium text-paper">
+          <span className="headline-link headline-link--paper">Read full story</span>
+          <ArrowRight className="h-4 w-4 transition-transform duration-300 ease-expo-out group-hover:translate-x-1" aria-hidden="true" />
+        </Link>
+      </motion.div>
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -223,6 +266,7 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
   };
 
   if (n === 0) return null;
+  if (n < MIN_DECK) return <StaticCard post={posts[0]} play={play} className={className} />;
   const current = posts[active];
   const currentIsBreaking = current.isBreaking || current.type === "breaking";
 

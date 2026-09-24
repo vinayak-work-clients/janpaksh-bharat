@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Post } from "@/types/content";
-import { siteConfig } from "@/config/site";
 import { getSection, sectionHref } from "@/config/sections";
+import { getSiteSettings, type SiteSettings } from "@/lib/data/settings";
 import { cn, formatDate, formatDuration, timeAgo } from "@/lib/utils";
 import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { ArticleBody } from "@/components/ArticleBody";
@@ -32,7 +32,7 @@ function initials(name: string) {
   return name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
 }
 
-function MediaBlock({ post }: { post: Post }) {
+function MediaBlock({ post, settings }: { post: Post; settings: SiteSettings }) {
   if (post.type === "video") {
     return (
       <figure className="container-editorial">
@@ -72,7 +72,7 @@ function MediaBlock({ post }: { post: Post }) {
             <Image src={post.coverImage} alt="" fill priority sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
           </div>
           <div className="md:col-span-8">
-            <Kicker dot>{siteConfig.podcast.showName}</Kicker>
+            <Kicker dot>{settings.podcast.showName}</Kicker>
             <h2 className="mt-3 font-serif text-h3 text-ink">Listen to this episode</h2>
             {post.mediaUrl ? (
               <EpisodePlayer post={post} className="mt-6" />
@@ -83,7 +83,7 @@ function MediaBlock({ post }: { post: Post }) {
             ) : null}
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <span className="font-sans text-kicker uppercase text-muted">Listen on</span>
-              {Object.entries(siteConfig.listenOn).map(([k, v]) => (
+              {Object.entries(settings.listenOn).map(([k, v]) => (
                 <a key={k} href={v} className="rounded-full border border-rule px-3 py-1 font-sans text-[0.78rem] font-medium capitalize text-ink transition-colors hover:border-ink">
                   {k}
                 </a>
@@ -108,7 +108,8 @@ function MediaBlock({ post }: { post: Post }) {
 }
 
 /** The public article layout; used by /news/[slug] and the admin preview. */
-export function ArticleView({ post, related, moreIn }: ArticleViewProps) {
+export async function ArticleView({ post, related, moreIn }: ArticleViewProps) {
+  const settings = await getSiteSettings();
   const section = getSection(post.section);
   const rail = moreIn.length >= 2 ? moreIn : related;
   const railLabel = moreIn.length >= 2 && section ? `More in ${section.name}` : "Read next";
@@ -182,7 +183,7 @@ export function ArticleView({ post, related, moreIn }: ArticleViewProps) {
           )}
         </header>
 
-        <MediaBlock post={post} />
+        <MediaBlock post={post} settings={settings} />
 
         {/* Body grid */}
         <div className="container-editorial mt-12 lg:mt-16">
@@ -231,9 +232,9 @@ export function ArticleView({ post, related, moreIn }: ArticleViewProps) {
                 </ol>
 
                 <div className="mt-8 bg-saffron p-5 text-ink">
-                  <Kicker tone="ink" className="text-ink/70">{siteConfig.cta.whatsappLabel}</Kicker>
+                  <Kicker tone="ink" className="text-ink/70">{settings.cta.whatsappLabel}</Kicker>
                   <p className="mt-2 font-serif text-[1.15rem] font-semibold leading-snug">Get the next update before it&rsquo;s a headline.</p>
-                  <Button href={siteConfig.socials.whatsapp} external variant="secondary" size="sm" className="mt-4">
+                  <Button href={settings.socials.whatsapp} external variant="secondary" size="sm" className="mt-4">
                     <WhatsAppIcon className="h-4 w-4" />
                     WhatsApp
                   </Button>

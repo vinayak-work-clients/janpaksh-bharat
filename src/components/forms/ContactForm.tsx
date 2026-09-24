@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { cn } from "@/lib/utils";
 import { contactSchema, TOPICS, type ContactInput } from "@/lib/contact-schema";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +15,7 @@ const fieldBase =
 const labelBase = "mb-2 block font-sans text-kicker uppercase text-muted";
 
 export function ContactForm() {
+  const { socials, cta, contact } = useSiteSettings();
   const [values, setValues] = useState<ContactInput>({
     name: "",
     email: "",
@@ -74,9 +75,9 @@ export function ContactForm() {
           WhatsApp is the fastest way to reach us.
         </p>
         <div className="mt-8">
-          <Button href={siteConfig.socials.whatsapp} external variant="primary">
+          <Button href={socials.whatsapp} external variant="primary">
             <WhatsAppIcon className="h-[18px] w-[18px]" />
-            {siteConfig.cta.whatsappLabel}
+            {cta.whatsappLabel}
           </Button>
         </div>
       </div>
@@ -142,7 +143,7 @@ export function ContactForm() {
         </Button>
         {status === "error" && (
           <p role="alert" className="font-sans text-[0.85rem] text-breaking">
-            Something went wrong. Please try again or email {siteConfig.contact.email}.
+            Something went wrong. Please try again or email {contact.email}.
           </p>
         )}
       </div>

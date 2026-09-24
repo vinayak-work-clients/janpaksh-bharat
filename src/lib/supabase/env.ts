@@ -17,7 +17,14 @@ export function hasSupabaseEnv(): boolean {
 
 export type DataSource = "mock" | "supabase";
 
-/** Where public pages read from. Defaults to mock. */
+/**
+ * Where public pages read from. Defaults to "supabase"; set DATA_SOURCE=mock
+ * for offline development. When nothing is set and the Supabase env is
+ * missing, the mock data is used so a bare checkout still builds.
+ */
 export function dataSource(): DataSource {
-  return process.env.DATA_SOURCE === "supabase" ? "supabase" : "mock";
+  const v = process.env.DATA_SOURCE;
+  if (v === "mock") return "mock";
+  if (v === "supabase") return "supabase";
+  return hasSupabaseEnv() ? "supabase" : "mock";
 }

@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { siteConfig } from "@/config/site";
 import { getSection, sections, sectionsByKind, sectionHref } from "@/config/sections";
-import { getLiveBreaking, getPostsBySection } from "@/lib/posts";
+import { getSiteSettings } from "@/lib/data/settings";
+import { getBreakingPosts, getLivePostsBySection } from "@/lib/data/posts";
 import { PageHero } from "@/components/PageHero";
 import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { PostCard } from "@/components/cards/PostCard";
@@ -16,7 +16,8 @@ import { Kicker } from "@/components/ui/Kicker";
 import { Button } from "@/components/ui/Button";
 import { WhatsAppIcon } from "@/components/icons/SocialIcons";
 
-export const revalidate = 300;
+export const revalidate = 60;
+export const dynamicParams = true;
 
 interface Props {
   params: { slug: string };
@@ -26,32 +27,33 @@ export function generateStaticParams() {
   return sections.map((s) => ({ slug: s.slug }));
 }
 
-export function generateMetadata({ params }: Props): Metadata {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const section = getSection(params.slug);
   if (!section) return { title: "Section not found" };
+  const { name } = await getSiteSettings();
   const title = `${section.name} · ${section.nameHindi}`;
   return {
     title,
     description: section.description,
     alternates: { canonical: sectionHref(section.slug) },
-    openGraph: { title: `${title} | ${siteConfig.name}`, description: section.description },
+    openGraph: { title: `${title} | ${name}`, description: section.description },
   };
 }
 
 const IN_FEED_EVERY = 6;
 
-export default function SectionPage({ params }: Props) {
+export default async function SectionPage({ params }: Props) {
   const section = getSection(params.slug);
   if (!section) notFound();
 
-  const posts = getPostsBySection(section.slug);
+  const [settings, posts, allBreaking] = await Promise.all([getSiteSettings(), getLivePostsBySection(section.slug), getBreakingPosts()]);
   // Lead with a picture story; breaking alerts read better in the rail and list.
   const leadIdx = Math.max(0, posts.findIndex((p) => !p.isBreaking && (p.type === "image" || p.type === "video")));
   const lead = posts[leadIdx];
   const afterLead = posts.filter((_, i) => i !== leadIdx);
   const secondary = afterLead.slice(0, 2);
   const list = afterLead.slice(2);
-  const breaking = getLiveBreaking().slice(0, 4);
+  const breaking = allBreaking.slice(0, 4);
   const others = sectionsByKind[section.kind].filter((s) => s.slug !== section.slug);
   const otherKind = section.kind === "region" ? sectionsByKind.topic : sectionsByKind.region;
 
@@ -161,9 +163,9 @@ export default function SectionPage({ params }: Props) {
                   <p className="mt-2 font-sans text-[0.85rem] leading-relaxed text-paper/70">
                     Verified alerts and ground reports from {section.name}, a few times a day.
                   </p>
-                  <Button href={siteConfig.socials.whatsapp} external variant="primary" size="sm" className="mt-4">
+                  <Button href={settings.socials.whatsapp} external variant="primary" size="sm" className="mt-4">
                     <WhatsAppIcon className="h-4 w-4" />
-                    {siteConfig.cta.whatsappLabel}
+                    {settings.cta.whatsappLabel}
                   </Button>
                 </div>
 

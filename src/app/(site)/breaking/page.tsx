@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { siteConfig } from "@/config/site";
-import { getLiveBreaking, getLivePosts } from "@/lib/posts";
+import { getSiteSettings } from "@/lib/data/settings";
+import { getBreakingPosts, getLivePosts } from "@/lib/data/posts";
 import { formatDate } from "@/lib/utils";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/PageHero";
 import { Kicker } from "@/components/ui/Kicker";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
-import { WhatsAppIcon, socialLinks } from "@/components/icons/SocialIcons";
+import { WhatsAppIcon, socialLinksFor } from "@/components/icons/SocialIcons";
 import type { Post } from "@/types/content";
 
-export const revalidate = 60;
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: "Breaking News",
@@ -50,10 +50,11 @@ function TimelineEntry({ post, red, index }: { post: Post; red: boolean; index: 
   );
 }
 
-export default function BreakingPage() {
-  const breaking = getLiveBreaking();
+export default async function BreakingPage() {
+  const [settings, breaking, all] = await Promise.all([getSiteSettings(), getBreakingPosts(), getLivePosts()]);
+  const socialLinks = socialLinksFor(settings.socials);
   const breakingIds = new Set(breaking.map((p) => p.id));
-  const earlier = getLivePosts().filter((p) => !breakingIds.has(p.id)).slice(0, 6);
+  const earlier = all.filter((p) => !breakingIds.has(p.id)).slice(0, 6);
 
   return (
     <>
@@ -106,9 +107,9 @@ export default function BreakingPage() {
                     Our WhatsApp community receives every verified breaking update the moment the desk clears it — two to four
                     messages a day, never spam.
                   </p>
-                  <Button href={siteConfig.socials.whatsapp} external variant="primary" className="mt-6 w-full sm:w-auto">
+                  <Button href={settings.socials.whatsapp} external variant="primary" className="mt-6 w-full sm:w-auto">
                     <WhatsAppIcon className="h-[18px] w-[18px]" />
-                    {siteConfig.cta.whatsappLabel}
+                    {settings.cta.whatsappLabel}
                   </Button>
                 </div>
               </Reveal>

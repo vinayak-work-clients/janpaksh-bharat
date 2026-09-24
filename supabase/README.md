@@ -72,6 +72,25 @@ Upserts the 36 mock posts by slug (created_at spread over the last 12 days,
 so `expires_at` mirrors the mock dates) and the 12 placeholder ad creatives.
 Re-run any time; it never duplicates.
 
+```
+npm run seed -- --wipe        # delete every post + media file + ad creative, then seed
+npm run seed -- --wipe-only   # the same wipe with nothing seeded: a clean slate for launch
+```
+
+The wipe uses the service role and skips `site_settings` and
+`contact_messages`. Uploaded files referenced by the deleted rows are removed
+from the `media` and `branding` buckets.
+
+## 3b. Live round trip (Phase 6)
+
+`npm run e2e:live` checks that dashboard changes reach the public site: it
+screenshots the main pages at 1440 and 390 into `qa/p6-*`, then changes the
+tagline, uploads a logo, toggles ads off and on, publishes and deletes a
+Photo post, and confirms each step on the front page, the section page and
+the article. Settings are restored afterwards. Run it against a production
+build (`npm run build && npm run start -- -p 3100`) so ISR and tag
+revalidation behave as they do on Vercel.
+
 ## 4. The 30-day rule
 
 - `posts.expires_at` is a generated column: `created_at + 30 days`.

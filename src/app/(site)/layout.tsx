@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getSiteSettings } from "@/lib/data/settings";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { Preloader } from "@/components/Preloader";
 import { BreakingTicker } from "@/components/layout/BreakingTicker";
 import { Navbar } from "@/components/layout/Navbar";
@@ -7,13 +10,28 @@ import { PlayerProvider } from "@/components/audio/PlayerProvider";
 import { MiniPlayer } from "@/components/audio/MiniPlayer";
 import { MobileCtaBar } from "@/components/layout/MobileCtaBar";
 
+/** Site-wide title/description/OG from the dashboard settings (siteConfig is the fallback). */
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteSettings();
+  const title = `${s.name} – ${s.tagline}`;
+  return {
+    title: { default: title, template: `%s | ${s.name}` },
+    description: s.description,
+    applicationName: s.name,
+    openGraph: { type: "website", siteName: `${s.nameHindi} · ${s.name}`, title, description: s.description, locale: "en_IN" },
+    twitter: { card: "summary_large_image", title, description: s.description },
+  };
+}
+
 /**
  * Public site chrome. URLs are unchanged: the (site) group adds no segment.
- * SectionNav is rendered by Navbar (it needs the header's scroll state).
+ * Settings come from site_settings (cached, tag "settings"): server
+ * components call getSiteSettings(), client components read the provider.
  */
-export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const settings = await getSiteSettings();
   return (
-    <>
+    <SiteSettingsProvider settings={settings}>
       <a href="#main" className="skip-link">
         Skip to content
       </a>
@@ -30,6 +48,6 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
           <MobileCtaBar />
         </PlayerProvider>
       </PreloaderProvider>
-    </>
+    </SiteSettingsProvider>
   );
 }

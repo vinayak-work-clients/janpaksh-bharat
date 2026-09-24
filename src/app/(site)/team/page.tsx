@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
 import { InstagramIcon, LinkedInIcon, XIcon } from "@/components/icons/SocialIcons";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Team",
   description: "The reporters, producers and editors behind Janpaksh Bharat.",

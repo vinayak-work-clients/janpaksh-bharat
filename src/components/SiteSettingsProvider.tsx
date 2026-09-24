@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Client-side access to the site settings. The (site) layout will wrap the
- * page tree with this in Phase 6 and pass the result of getSiteSettings();
- * until then every consumer sees the siteConfig defaults.
+ * Client-side access to the site settings. The (site) layout wraps the page
+ * tree with this and passes the result of getSiteSettings(); outside it
+ * (the admin, tests) consumers see the siteConfig defaults.
  */
 import { createContext, useContext, type ReactNode } from "react";
 import { defaultSettings, type SiteSettings } from "@/lib/site-settings";

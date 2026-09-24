@@ -1,5 +1,4 @@
 import type { SVGProps } from "react";
-import { siteConfig } from "@/config/site";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -59,11 +58,20 @@ export function LinkedInIcon(props: IconProps) {
   );
 }
 
-/** Ordered social list used by the navbar and footer. */
-export const socialLinks = [
-  { label: "WhatsApp", href: siteConfig.socials.whatsapp, Icon: WhatsAppIcon },
-  { label: "Instagram", href: siteConfig.socials.instagram, Icon: InstagramIcon },
-  { label: "YouTube", href: siteConfig.socials.youtube, Icon: YouTubeIcon },
-  { label: "X", href: siteConfig.socials.x, Icon: XIcon },
-  { label: "Facebook", href: siteConfig.socials.facebook, Icon: FacebookIcon },
-] as const;
+export interface SocialLink {
+  label: string;
+  href: string;
+  Icon: (props: IconProps) => JSX.Element;
+}
+
+/** Ordered social list for the navbar, footer and contact page, from the site settings. */
+export function socialLinksFor(socials: { whatsapp: string; instagram: string; youtube: string; x: string; facebook: string }): SocialLink[] {
+  return [
+    { label: "WhatsApp", href: socials.whatsapp, Icon: WhatsAppIcon },
+    { label: "Instagram", href: socials.instagram, Icon: InstagramIcon },
+    { label: "YouTube", href: socials.youtube, Icon: YouTubeIcon },
+    { label: "X", href: socials.x, Icon: XIcon },
+    { label: "Facebook", href: socials.facebook, Icon: FacebookIcon },
+  ];
+}
+

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { siteConfig } from "@/config/site";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { usePreloader } from "@/components/PreloaderProvider";
 
 const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
@@ -29,6 +29,7 @@ export function Preloader() {
   const reduceMotion = useReducedMotion();
   const decided = useRef(false);
   const { markDone } = usePreloader();
+  const { name, nameHindi, tagline } = useSiteSettings();
 
   // Hold the lockup until the web fonts are in (max 400ms) plus a short
   // settle so it never flashes in a fallback face. The ref guard keeps React
@@ -128,7 +129,7 @@ export function Preloader() {
               style={{ fontSize: "clamp(3rem, 11vw, 9.5rem)", willChange: "filter, transform, opacity" }}
               {...rise(D_HINDI)}
             >
-              {siteConfig.nameHindi}
+              {nameHindi}
             </motion.h1>
 
             {/* Line 2 — English name, tracked, saffron */}
@@ -137,7 +138,7 @@ export function Preloader() {
               style={{ fontSize: "clamp(0.9rem, 2.4vw, 1.6rem)", willChange: "filter, transform, opacity" }}
               {...rise(D_ENGLISH)}
             >
-              {siteConfig.name}
+              {name}
             </motion.p>
 
             {/* Saffron hairline drawing left → right */}
@@ -173,7 +174,7 @@ export function Preloader() {
                 ease: EXPO_OUT,
               }}
             >
-              {siteConfig.tagline}
+              {tagline}
             </motion.p>
           </motion.div>
         </motion.div>

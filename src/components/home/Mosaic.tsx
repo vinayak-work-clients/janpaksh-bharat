@@ -14,7 +14,10 @@ const spanClass: Record<Span, string> = {
   6: "lg:col-span-6",
 };
 
-export function Mosaic({ posts }: { posts: Post[] }) {
+export function Mosaic({ posts: all }: { posts: Post[] }) {
+  // Each pattern row holds three cards; a partial row leaves holes, so only
+  // complete rows render and the section hides itself below three posts.
+  const posts = all.slice(0, Math.min(9, Math.floor(all.length / 3) * 3));
   if (posts.length === 0) return null;
 
   return (

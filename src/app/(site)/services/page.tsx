@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CalendarDays, Clapperboard, Handshake, Megaphone, Mic, Newspaper } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { getSiteSettings } from "@/lib/data/settings";
 import { services } from "@/data/services";
 import type { Service } from "@/types/content";
 import { PageHero } from "@/components/PageHero";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/motion/Reveal";
 import { WhatsAppIcon } from "@/components/icons/SocialIcons";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Services",
@@ -24,7 +26,8 @@ const steps = [
   { title: "Deliver", text: "Files, rights and a distribution plan — plus a fortnightly performance note." },
 ];
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const { socials } = await getSiteSettings();
   return (
     <>
       <PageHero variant="dark" eyebrow="Services" title="Journalism, produced end to end" titleHindi="हमारी सेवाएँ" description="We work with newsrooms, brands, institutions and communities that need stories told with the discipline of a news desk — and labelled honestly." />
@@ -77,7 +80,7 @@ export default function ServicesPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button href="/contact" variant="primary" size="lg">Start a conversation</Button>
-            <Button href={siteConfig.socials.whatsapp} external variant="ghost" size="lg">
+            <Button href={socials.whatsapp} external variant="ghost" size="lg">
               <WhatsAppIcon className="h-[18px] w-[18px]" />
               WhatsApp us
             </Button>
