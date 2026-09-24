@@ -6,16 +6,9 @@ import {
   Noto_Serif_Devanagari,
   Tiro_Devanagari_Hindi,
 } from "next/font/google";
+import { Toaster } from "sonner";
 import { siteConfig } from "@/config/site";
 import { SITE_URL } from "@/lib/site-url";
-import { Preloader } from "@/components/Preloader";
-import { BreakingTicker } from "@/components/layout/BreakingTicker";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { PreloaderProvider } from "@/components/PreloaderProvider";
-import { PlayerProvider } from "@/components/audio/PlayerProvider";
-import { MiniPlayer } from "@/components/audio/MiniPlayer";
-import { MobileCtaBar } from "@/components/layout/MobileCtaBar";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -84,6 +77,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+/**
+ * Root layout: html/body, fonts, global CSS, metadata defaults and toasts.
+ * The public chrome lives in (site)/layout.tsx; the dashboard shell in admin/layout.tsx.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -93,22 +90,18 @@ export default function RootLayout({
       className={`${fraunces.variable} ${inter.variable} ${tiroHindi.variable} ${notoHindi.variable} ${notoSerifHindi.variable}`}
     >
       <body className="flex min-h-screen flex-col">
-        <a href="#main" className="skip-link">
-          Skip to content
-        </a>
-        <PreloaderProvider>
-          <PlayerProvider>
-            <Preloader />
-            <BreakingTicker />
-            <Navbar />
-            <main id="main" className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <MiniPlayer />
-            <MobileCtaBar />
-          </PlayerProvider>
-        </PreloaderProvider>
+        {children}
+        <Toaster
+          position="bottom-center"
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: "font-sans !rounded-none !border-rule !bg-paper !text-ink !shadow-lg",
+              title: "!font-medium",
+              description: "!text-muted",
+            },
+          }}
+        />
       </body>
     </html>
   );

@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import type { Post } from "@/types/content";
 import { siteConfig } from "@/config/site";
 import { getSection, sectionHref } from "@/config/sections";
-import { getLivePostBySlug, getLivePosts, getMoreInSection, getRelatedPosts } from "@/lib/posts";
 import { cn, formatDate, formatDuration, timeAgo } from "@/lib/utils";
 import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { ArticleBody } from "@/components/ArticleBody";
@@ -22,43 +20,26 @@ import { Reveal } from "@/components/motion/Reveal";
 import { ConnectBand } from "@/components/home/ConnectBand";
 import { WhatsAppIcon } from "@/components/icons/SocialIcons";
 
-interface Props {
-  params: { slug: string };
-}
-
-export function generateStaticParams() {
-  return getLivePosts().map((p) => ({ slug: p.slug }));
-}
-
-export function generateMetadata({ params }: Props): Metadata {
-  const post = getLivePostBySlug(params.slug);
-  if (!post) return { title: "Story not found" };
-  return {
-    title: post.title,
-    description: post.standfirst ?? post.excerpt,
-    openGraph: {
-      type: "article",
-      title: post.title,
-      description: post.standfirst ?? post.excerpt,
-      images: [{ url: post.coverImage }],
-      publishedTime: post.publishedAt,
-      authors: [post.author.name],
-    },
-  };
+interface ArticleViewProps {
+  post: Post;
+  /** Other live posts, same category first. */
+  related: Post[];
+  /** Other live posts from the same section. */
+  moreIn: Post[];
 }
 
 function initials(name: string) {
   return name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
 }
 
-function MediaBlock({ post }: { post: NonNullable<ReturnType<typeof getLivePostBySlug>> }) {
+function MediaBlock({ post }: { post: Post }) {
   if (post.type === "video") {
     return (
       <figure className="container-editorial">
         <div className="relative aspect-video w-full overflow-hidden bg-ink">
           {post.mediaUrl ? (
             <video controls playsInline preload="metadata" poster={post.coverImage} className="absolute inset-0 h-full w-full">
-              <source src={post.mediaUrl} type="video/mp4" />
+              <source src={post.mediaUrl} />
               Your browser does not support embedded video.
             </video>
           ) : post.embedUrl ? (
@@ -93,7 +74,13 @@ function MediaBlock({ post }: { post: NonNullable<ReturnType<typeof getLivePostB
           <div className="md:col-span-8">
             <Kicker dot>{siteConfig.podcast.showName}</Kicker>
             <h2 className="mt-3 font-serif text-h3 text-ink">Listen to this episode</h2>
-            <EpisodePlayer post={post} className="mt-6" />
+            {post.mediaUrl ? (
+              <EpisodePlayer post={post} className="mt-6" />
+            ) : post.embedUrl ? (
+              <div className="relative mt-6 h-40 w-full overflow-hidden">
+                <iframe title={post.title} src={post.embedUrl} loading="lazy" allow="autoplay; encrypted-media" className="absolute inset-0 h-full w-full border-0" />
+              </div>
+            ) : null}
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <span className="font-sans text-kicker uppercase text-muted">Listen on</span>
               {Object.entries(siteConfig.listenOn).map(([k, v]) => (
@@ -114,19 +101,15 @@ function MediaBlock({ post }: { post: NonNullable<ReturnType<typeof getLivePostB
         <Image src={post.coverImage} alt="" fill priority sizes="(min-width: 1320px) 1320px, 100vw" className="object-cover" />
       </div>
       <figcaption className="mt-3 font-sans text-[0.75rem] uppercase tracking-[0.12em] text-muted">
-        {post.category} · Photo: Unsplash
+        {post.category}
       </figcaption>
     </figure>
   );
 }
 
-export default function NewsArticlePage({ params }: Props) {
-  const post = getLivePostBySlug(params.slug);
-  if (!post) notFound();
-
-  const related = getRelatedPosts(post, 3);
+/** The public article layout; used by /news/[slug] and the admin preview. */
+export function ArticleView({ post, related, moreIn }: ArticleViewProps) {
   const section = getSection(post.section);
-  const moreIn = getMoreInSection(post, 3);
   const rail = moreIn.length >= 2 ? moreIn : related;
   const railLabel = moreIn.length >= 2 && section ? `More in ${section.name}` : "Read next";
   const tone = post.isBreaking ? "breaking" : "saffron";

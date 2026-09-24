@@ -14,6 +14,11 @@ export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   const isLogin = pathname === LOGIN_PATH;
+  // The password-recovery callback and the sign-out route must stay reachable
+  // with or without a session; treat them as outside the gate entirely.
+  if (pathname.startsWith("/admin/auth/") || pathname === "/admin/logout") {
+    return NextResponse.next();
+  }
 
   // Without Supabase configured there is nothing to refresh; keep /admin closed.
   if (!url || !anonKey) {

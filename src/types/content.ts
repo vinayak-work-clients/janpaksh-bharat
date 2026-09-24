@@ -4,7 +4,8 @@ export type Block =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
   | { type: "quote"; text: string; cite?: string }
-  | { type: "image"; src: string; caption?: string; alt?: string }
+  /** `path` is the storage object path when uploaded through the dashboard. */
+  | { type: "image"; src: string; caption?: string; alt?: string; path?: string }
   | { type: "list"; items: string[] };
 
 export interface Post {

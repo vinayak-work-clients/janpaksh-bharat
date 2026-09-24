@@ -33,6 +33,19 @@ Copy `.env.example` to `.env.local` and fill in, from **Project Settings → API
      Auth user. If it is empty, the email in the last statement did not match:
      edit it and run just that `insert` again.
 4. From the repo: `npm run db:check` prints PASS/FAIL for each of those.
+5. **Phase 5A:** run `supabase/migrations/0002_cover_alt.sql` the same way. It
+   adds `posts.cover_alt` (cover image alt text from the dashboard). Until it
+   is applied the dashboard still saves posts, but warns that alt text was
+   not stored.
+
+## 2b. Admin dashboard check (optional)
+
+`npm run e2e:admin` drives the dashboard end to end with Playwright: sign in,
+create a Photo post with a generated image, publish, edit, duplicate, delete
+both and confirm the storage objects are gone. It needs `ADMIN_E2E_EMAIL` /
+`ADMIN_E2E_PASSWORD` in `.env.local` pointing at a **confirmed Auth user that
+is listed in `public.admins`**, and the app running (`E2E_BASE_URL`, default
+`http://localhost:3100`). Without the credentials it skips.
 
 ## 3. Seed the mock content
 

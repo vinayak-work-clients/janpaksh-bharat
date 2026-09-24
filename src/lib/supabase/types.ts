@@ -26,6 +26,8 @@ export type PostRow = {
   body: Block[];
   cover_image_url: string;
   cover_image_path: string | null;
+  /** Added by 0002_cover_alt.sql; optional so older databases still type-check. */
+  cover_alt?: string | null;
   media_url: string | null;
   media_path: string | null;
   embed_url: string | null;
