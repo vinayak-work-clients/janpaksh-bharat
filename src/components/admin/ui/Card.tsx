@@ -10,12 +10,13 @@ interface CardProps {
   /** Remove padding (tables). */
   flush?: boolean;
   as?: "div" | "section";
+  id?: string;
 }
 
 /** Bordered panel on paper. Headed variant when `title` is given. */
-export function Card({ children, className, title, action, flush = false, as: Tag = "div" }: CardProps) {
+export function Card({ children, className, title, action, flush = false, as: Tag = "div", id }: CardProps) {
   return (
-    <Tag className={cn("border border-rule bg-paper", className)}>
+    <Tag id={id} className={cn("border border-rule bg-paper", className)}>
       {(title || action) && (
         <div className="flex min-h-[3.25rem] items-center justify-between gap-4 border-b border-rule px-4 sm:px-5">
           {title && <h2 className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.14em] text-muted">{title}</h2>}

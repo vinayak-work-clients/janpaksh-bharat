@@ -14,10 +14,13 @@ interface LogoProps {
   /** Size of the lockup. */
   size?: LogoSize;
   /**
-   * When set, the image logo replaces the saffron square mark. This is the
-   * single place the real logo asset will be swapped in.
+   * The uploaded logo (site_settings.logo_url). When set, the image replaces
+   * the whole text lockup at the lockup's height; the wordmark stays in the
+   * accessible name. Navbar/Footer/Preloader receive it from settings in Phase 6.
    */
   imageSrc?: string;
+  /** Variant for ink surfaces (tone="paper"); falls back to `imageSrc`. */
+  imageSrcDark?: string;
 }
 
 /**
@@ -26,7 +29,7 @@ interface LogoProps {
  */
 const metrics: Record<
   LogoSize,
-  { hindi: string; english: string; gap: string; mark: string; markPx: number; rowGap: string }
+  { hindi: string; english: string; gap: string; mark: string; markPx: number; rowGap: string; imagePx: number }
 > = {
   nav: {
     hindi: "text-[1.35rem] leading-[1.15]",
@@ -35,6 +38,7 @@ const metrics: Record<
     mark: "h-2.5 w-2.5",
     markPx: 26,
     rowGap: "gap-2.5",
+    imagePx: 36,
   },
   menu: {
     hindi: "text-[1.6rem] leading-[1.15]",
@@ -43,6 +47,7 @@ const metrics: Record<
     mark: "h-3 w-3",
     markPx: 30,
     rowGap: "gap-3",
+    imagePx: 44,
   },
   footer: {
     hindi: "text-[2rem] leading-[1.15]",
@@ -51,6 +56,7 @@ const metrics: Record<
     mark: "h-3 w-3",
     markPx: 36,
     rowGap: "gap-3.5",
+    imagePx: 52,
   },
   display: {
     hindi: "text-[clamp(2.5rem,6vw,4.5rem)] leading-[1.15]",
@@ -59,6 +65,7 @@ const metrics: Record<
     mark: "h-4 w-4",
     markPx: 56,
     rowGap: "gap-4",
+    imagePx: 88,
   },
 };
 
@@ -74,25 +81,32 @@ export function Logo({
   asSpan = false,
   size = "nav",
   imageSrc,
+  imageSrcDark,
 }: LogoProps) {
   const m = metrics[size];
   const paper = tone === "paper";
+  const image = paper ? imageSrcDark ?? imageSrc : imageSrc;
 
-  const content = (
+  const content = image ? (
     <>
-      {imageSrc ? (
-        <Image
-          src={imageSrc}
-          alt=""
-          aria-hidden="true"
-          width={m.markPx}
-          height={m.markPx}
-          className="shrink-0 object-contain"
-          style={{ height: m.markPx, width: "auto" }}
-        />
-      ) : (
-        <span aria-hidden="true" className={cn("inline-block shrink-0 bg-saffron", m.mark)} />
-      )}
+      <Image
+        src={image}
+        alt=""
+        aria-hidden="true"
+        unoptimized
+        width={0}
+        height={0}
+        sizes={`${m.imagePx * 4}px`}
+        className="shrink-0 object-contain"
+        style={{ height: m.imagePx, width: "auto" }}
+      />
+      <span className="sr-only">
+        {siteConfig.nameHindi} · {siteConfig.name}
+      </span>
+    </>
+  ) : (
+    <>
+      <span aria-hidden="true" className={cn("inline-block shrink-0 bg-saffron", m.mark)} />
       <span className={cn("flex flex-col items-start", m.gap)}>
         <span
           lang="hi"

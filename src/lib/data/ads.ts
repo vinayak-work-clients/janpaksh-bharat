@@ -9,6 +9,9 @@ import type { AdRow } from "@/lib/supabase/types";
 import { dataSource } from "@/lib/supabase/env";
 import { createPublicClient } from "@/lib/supabase/server";
 import { cached } from "@/lib/data/cache";
+import { pickByWeight } from "@/lib/ads-pick";
+
+export { pickByWeight, pickDeterministic } from "@/lib/ads-pick";
 
 export interface ActiveAd extends AdCreative {
   id: string;
@@ -48,18 +51,6 @@ const fetchActiveAds = cached(
 /** Every active creative across all slots (RLS-filtered on the Supabase path). */
 export async function getAllActiveAds(): Promise<ActiveAd[]> {
   return dataSource() === "supabase" ? fetchActiveAds() : configAds();
-}
-
-/** Weighted random pick — deterministic-friendly: pass `random` for tests. */
-export function pickByWeight<T extends { weight: number }>(items: T[], random: () => number = Math.random): T | null {
-  if (items.length === 0) return null;
-  const total = items.reduce((sum, i) => sum + Math.max(1, i.weight), 0);
-  let r = random() * total;
-  for (const item of items) {
-    r -= Math.max(1, item.weight);
-    if (r <= 0) return item;
-  }
-  return items[items.length - 1];
 }
 
 /** All active creatives for a slot (a slot may rotate between several). */

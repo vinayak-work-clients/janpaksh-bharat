@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useId, useRef, useState, type ClipboardEvent, type DragEvent } from "react";
 import { Camera, FileAudio, FileVideo, ImagePlus, Link2, Loader2, Trash2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ACCEPT_ATTR, formatBytes, normaliseMime, extensionFor, validateFile, type UploadKind } from "@/lib/admin/storage";
+import { ACCEPT_ATTR, formatBytes, normaliseMime, extensionFor, validateFile, type UploadKind, type UploadTarget } from "@/lib/admin/storage";
 import { prepareImage, readDuration } from "@/lib/admin/media-client";
 import { removeUploaded, uploadBlob } from "@/lib/admin/upload-client";
 import { Button } from "@/components/admin/ui/Button";
@@ -19,6 +19,9 @@ export interface MediaChange extends MediaValue {
   durationSec?: number | null;
   /** The local file (video only) so the editor can grab a frame for the cover. */
   file?: File;
+  /** Decoded pixel size (image uploads only). */
+  width?: number;
+  height?: number;
 }
 
 interface MediaUploaderProps {
@@ -27,6 +30,8 @@ interface MediaUploaderProps {
   onChange: (next: MediaChange | null) => void;
   /** Folder inside the bucket (post slug or "temp"). */
   folder: string;
+  /** Upload somewhere other than the media bucket (ad creatives, brand assets). */
+  target?: UploadTarget;
   id?: string;
   /** Allow pasting an external URL instead of uploading. */
   allowUrl?: boolean;
@@ -46,7 +51,7 @@ type Status =
 
 const ICON: Record<UploadKind, typeof ImagePlus> = { image: ImagePlus, video: FileVideo, audio: FileAudio };
 
-export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = true, preview = "cover", compact = false, invalid, describedBy }: MediaUploaderProps) {
+export function MediaUploader({ kind, value, onChange, folder, target, id, allowUrl = true, preview = "cover", compact = false, invalid, describedBy }: MediaUploaderProps) {
   const inputId = useId();
   const controlId = id ?? inputId;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,16 +66,20 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const discardPrevious = useCallback(async (prev: MediaValue | null) => {
-    if (prev?.path && sessionPaths.current.has(prev.path)) {
-      sessionPaths.current.delete(prev.path);
-      await removeUploaded([prev.path]);
-    }
-  }, []);
+  const bucket = target?.bucket;
+  const discardPrevious = useCallback(
+    async (prev: MediaValue | null) => {
+      if (prev?.path && sessionPaths.current.has(prev.path)) {
+        sessionPaths.current.delete(prev.path);
+        await removeUploaded([prev.path], bucket);
+      }
+    },
+    [bucket],
+  );
 
   const handleFile = useCallback(
     async (file: File) => {
-      const problem = validateFile(file, kind);
+      const problem = validateFile(file, kind, target);
       if (problem) {
         setStatus({ kind: "error", message: problem });
         return;
@@ -84,13 +93,17 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
         let contentType = normaliseMime(file);
         let ext = extensionFor(contentType, file.name);
         let durationSec: number | null | undefined;
+        let width: number | undefined;
+        let height: number | undefined;
 
         if (kind === "image") {
           setStatus({ kind: "processing", name: file.name });
-          const prepared = await prepareImage(file);
+          const prepared = await prepareImage(file, { keepOriginal: target?.keepOriginal });
           blob = prepared.blob;
           contentType = prepared.contentType;
           ext = prepared.ext;
+          width = prepared.width;
+          height = prepared.height;
         } else {
           durationSec = await readDuration(file, kind);
         }
@@ -102,12 +115,13 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
           contentType,
           ext,
           folder,
+          target,
           signal: controller.signal,
           onProgress: (p) => setStatus({ kind: "uploading", name: file.name, size: blob.size, percent: p.percent }),
         });
         sessionPaths.current.add(uploaded.path);
         setStatus({ kind: "idle" });
-        onChange({ url: uploaded.url, path: uploaded.path, durationSec, file: kind === "video" ? file : undefined });
+        onChange({ url: uploaded.url, path: uploaded.path, durationSec, file: kind === "video" ? file : undefined, width, height });
         void discardPrevious(previous);
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") {
@@ -120,7 +134,7 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
         if (cameraRef.current) cameraRef.current.value = "";
       }
     },
-    [kind, folder, onChange, value, discardPrevious],
+    [kind, folder, target, onChange, value, discardPrevious],
   );
 
   const onDrop = (e: DragEvent) => {
@@ -165,12 +179,13 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
   const Icon = ICON[kind];
   const busy = status.kind === "processing" || status.kind === "uploading";
   const label = kind === "image" ? "image" : kind === "video" ? "video" : "audio";
-  const limits = kind === "image" ? "JPG, PNG, WebP · up to 10 MB" : kind === "video" ? "MP4, WebM, MOV · up to 50 MB" : "MP3, M4A, WAV · up to 50 MB";
+  const limits = target?.limits ?? (kind === "image" ? "JPG, PNG, WebP · up to 10 MB" : kind === "video" ? "MP4, WebM, MOV · up to 50 MB" : "MP3, M4A, WAV · up to 50 MB");
+  const acceptAttr = target?.acceptAttr ?? ACCEPT_ATTR[kind];
 
   /* ---- Filled state ---- */
   if (value && !busy) {
     return (
-      <div className={cn("border border-rule bg-paper", invalid && "border-breaking")} aria-describedby={describedBy}>
+      <div className={cn("min-w-0 border border-rule bg-paper", invalid && "border-breaking")} aria-describedby={describedBy}>
         {kind === "image" && preview !== "none" && (
           <div className={cn("grid gap-2 p-2", preview === "cover" && !compact ? "grid-cols-[3fr_2fr]" : "grid-cols-1")}>
             <div className={cn("relative overflow-hidden bg-paper-2", preview === "cover" ? "aspect-video" : "aspect-[3/2]")}>
@@ -206,7 +221,7 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
             <Trash2 className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
-        <input ref={inputRef} type="file" accept={ACCEPT_ATTR[kind]} className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
+        <input ref={inputRef} type="file" accept={acceptAttr} className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
       </div>
     );
   }
@@ -287,7 +302,7 @@ export function MediaUploader({ kind, value, onChange, folder, id, allowUrl = tr
           )}
         </div>
         <p className="mt-3 font-sans text-[0.72rem] text-muted">{limits}</p>
-        <input id={controlId} ref={inputRef} type="file" accept={ACCEPT_ATTR[kind]} className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
+        <input id={controlId} ref={inputRef} type="file" accept={acceptAttr} className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
         {kind === "image" && (
           <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
         )}

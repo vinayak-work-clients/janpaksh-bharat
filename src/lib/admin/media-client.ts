@@ -48,12 +48,12 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
  * Small originals (< 400 KB) that already fit are uploaded untouched; GIFs
  * are never re-encoded (it would drop the animation).
  */
-export async function prepareImage(file: File): Promise<PreparedImage> {
+export async function prepareImage(file: File, opts: { keepOriginal?: boolean } = {}): Promise<PreparedImage> {
   const mime = normaliseMime(file);
   const { width, height, source, release } = await decode(file);
   try {
     const fits = Math.max(width, height) <= IMAGE_MAX_EDGE;
-    if (mime === "image/gif" || (fits && file.size <= IMAGE_KEEP_ORIGINAL_BYTES)) {
+    if (opts.keepOriginal || mime === "image/gif" || mime === "image/svg+xml" || (fits && file.size <= IMAGE_KEEP_ORIGINAL_BYTES)) {
       return { blob: file, contentType: mime, ext: extensionFor(mime, file.name), width, height, original: true };
     }
     const scale = fits ? 1 : IMAGE_MAX_EDGE / Math.max(width, height);

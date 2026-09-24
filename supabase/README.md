@@ -47,6 +47,21 @@ both and confirm the storage objects are gone. It needs `ADMIN_E2E_EMAIL` /
 is listed in `public.admins`**, and the app running (`E2E_BASE_URL`, default
 `http://localhost:3100`). Without the credentials it skips.
 
+`npm run e2e:admin-b` covers Phase 5B the same way: add a 300×250 creative
+to a slot, toggle and delete it (storage object gone), send the public
+contact form and work the message through the inbox (read → archive →
+delete), change the Brand tagline and restore it. It also writes
+`qa/p5b-{ads,messages,settings}-{1440,390}.png`. If `ADMIN_E2E_PASSWORD`
+does not match the Auth user the script signs in with a service-role magic
+link instead and says so; the password is never changed.
+
+## 2c. Brand assets and ad creatives
+
+The dashboard uploads ad creatives to the `branding` bucket under
+`ads/{slotKey}/`, logos under `logo/` and the hero poster under `hero/`.
+Replaced or deleted files are removed by the server action that saved them;
+the nightly purge only sweeps the `media` bucket.
+
 ## 3. Seed the mock content
 
 ```

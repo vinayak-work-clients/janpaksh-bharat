@@ -32,7 +32,7 @@ function pageMeta(pathname: string): { title: string; crumbs: Array<{ label: str
   if (pathname === "/admin/posts") return { title: "Posts", crumbs: [{ label: "Overview", href: "/admin" }] };
   if (pathname === "/admin/posts/new") return { title: "New post", crumbs: [{ label: "Posts", href: "/admin/posts" }] };
   if (pathname.startsWith("/admin/posts/")) return { title: "Edit post", crumbs: [{ label: "Posts", href: "/admin/posts" }] };
-  const item = NAV.find((n) => pathname === n.href || pathname.startsWith(`${n.href}/`));
+  const item = NAV.find((n) => !("exact" in n && n.exact) && (pathname === n.href || pathname.startsWith(`${n.href}/`)));
   return { title: item?.label ?? "Admin", crumbs: [{ label: "Overview", href: "/admin" }] };
 }
 

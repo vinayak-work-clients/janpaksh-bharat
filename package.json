@@ -10,7 +10,8 @@
     "seed": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/seed.ts",
     "db:check": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/check-supabase.ts",
     "ads:placeholders": "node scripts/make-ad-placeholders.mjs",
-    "e2e:admin": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-admin-posts.mjs"
+    "e2e:admin": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-admin-posts.mjs",
+    "e2e:admin-b": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/e2e-admin-b.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

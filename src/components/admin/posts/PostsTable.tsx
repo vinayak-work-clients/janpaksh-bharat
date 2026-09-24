@@ -21,7 +21,7 @@ import { Select } from "@/components/admin/ui/Select";
 import { ConfirmDialog } from "@/components/admin/ui/Dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/admin/ui/DropdownMenu";
 import { ExpiryBadge, StatusBadge } from "@/components/admin/posts/badges";
-import { newPostHref, POST_TYPE_OPTIONS } from "@/components/admin/NewPostMenu";
+import { newPostHref, POST_TYPE_OPTIONS } from "@/components/admin/post-types";
 
 export interface PostsFilters {
   q: string;

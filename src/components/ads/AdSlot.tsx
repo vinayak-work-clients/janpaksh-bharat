@@ -1,7 +1,11 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
-import { adSizes, adSlots, type AdSizeKey, type AdSlotKey } from "@/config/ads";
+import { adSizes, adSlots, type AdCreative, type AdSizeKey, type AdSlotKey } from "@/config/ads";
+import { pickDeterministic } from "@/lib/ads-pick";
 import { cn } from "@/lib/utils";
+
+/** A creative from the ads table (or the config), with its rotation weight. */
+export type SlotCreative = AdCreative & { id?: string; weight?: number };
 
 interface AdSlotProps {
   slot: AdSlotKey;
@@ -10,6 +14,12 @@ interface AdSlotProps {
   align?: "center" | "start";
   /** Above-the-fold slots load eagerly; everything else is lazy. */
   priority?: boolean;
+  /**
+   * Creatives to rotate between (Phase 6 passes the ads table here). When
+   * given, one is chosen by weight, deterministically per request; an empty
+   * list hides the slot. Omitted → the config's dummy creative (today's behaviour).
+   */
+  creatives?: SlotCreative[];
 }
 
 /**
@@ -69,11 +79,13 @@ function Frame({
  * by breakpoint; each breakpoint's frame is present in the DOM but only one
  * is displayed, so the reserved height is always correct.
  */
-export function AdSlot({ slot, className, align = "center", priority = false }: AdSlotProps) {
+export function AdSlot({ slot, className, align = "center", priority = false, creatives }: AdSlotProps) {
   const config = adSlots[slot];
   if (!config?.enabled) return null;
 
-  const { size, tabletSize, mobileSize, creative } = config;
+  const { size, tabletSize, mobileSize } = config;
+  const creative = creatives ? pickDeterministic(creatives.map((c) => ({ ...c, weight: c.weight ?? 1 })), slot) : config.creative;
+  if (!creative) return null;
   const srcFor = (s: AdSizeKey) => (s === size ? creative.src : (creative.srcBySize?.[s] ?? creative.src));
 
   // Visibility classes per breakpoint so exactly one frame is displayed.

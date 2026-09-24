@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin/auth";
-import { ComingSoon } from "@/components/admin/ComingSoon";
+import { getAllAds, getSettingsRow } from "@/lib/admin/queries";
+import { AdsManager } from "@/components/admin/ads/AdsManager";
 
 export const metadata: Metadata = { title: "Ads" };
 
 export default async function AdsPage() {
-  await requireAdmin();
-  return <ComingSoon what="Ad management" detail="Upload creatives per slot, schedule them and switch them on or off. Until then the placeholder creatives keep running." />;
+  const { supabase } = await requireAdmin();
+  const [ads, settings] = await Promise.all([getAllAds(supabase), getSettingsRow(supabase)]);
+  return <AdsManager ads={ads} adsEnabled={settings?.ads_enabled ?? true} />;
 }

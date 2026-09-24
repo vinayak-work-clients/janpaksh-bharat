@@ -48,6 +48,8 @@ export interface AdSlotConfig {
   /** Optional size below md. Without it the primary size scales down fluidly. */
   mobileSize?: AdSizeKey;
   enabled: boolean;
+  /** One line for the dashboard: where on the site the slot appears. */
+  where: string;
   creative: AdCreative;
 }
 
@@ -115,6 +117,7 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     tabletSize: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Front page, directly under the hero",
     creative: dummy("a", "billboard", "leaderboard", "mobileBanner"),
   },
   "home.midMosaic": {
@@ -122,6 +125,7 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Front page, between the story mosaic and Watch",
     creative: dummy("b", "leaderboard", "mobileBanner"),
   },
   "home.beforeListen": {
@@ -129,6 +133,7 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Front page, above the Listen band",
     creative: dummy("a", "leaderboard", "mobileBanner"),
   },
   "section.topLeaderboard": {
@@ -136,12 +141,14 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Section pages, above the story list",
     creative: dummy("b", "leaderboard", "mobileBanner"),
   },
   "section.rail": {
     label: "Section · right rail",
     size: "halfPage",
     enabled: true,
+    where: "Section pages, sticky right rail (desktop only)",
     creative: dummy("a", "halfPage"),
   },
   "section.inFeed": {
@@ -149,12 +156,14 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "inFeed",
     enabled: true,
+    where: "Section pages, inside the story list",
     creative: dummy("a", "leaderboard", "inFeed"),
   },
   "article.rail": {
     label: "Article · right rail",
     size: "halfPage",
     enabled: true,
+    where: "Article pages, sticky right rail (desktop only)",
     creative: dummy("b", "halfPage"),
   },
   "article.inBody": {
@@ -162,6 +171,7 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Article pages, between the first paragraphs",
     creative: dummy("a", "leaderboard", "mobileBanner"),
   },
   "article.belowBody": {
@@ -169,6 +179,7 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Article pages, after the story",
     creative: dummy("b", "leaderboard", "mobileBanner"),
   },
   "listing.top": {
@@ -176,6 +187,7 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "mobileBanner",
     enabled: true,
+    where: "Breaking and Blogs listings, above the list",
     creative: dummy("a", "leaderboard", "mobileBanner"),
   },
   "listing.inFeed": {
@@ -183,12 +195,14 @@ export const adSlots: Record<AdSlotKey, AdSlotConfig> = {
     size: "leaderboard",
     mobileSize: "inFeed",
     enabled: true,
+    where: "Breaking and Blogs listings, inside the list",
     creative: dummy("b", "leaderboard", "inFeed"),
   },
   "podcast.rail": {
     label: "Podcasts · rail",
     size: "mpu",
     enabled: true,
+    where: "Podcasts page, right rail",
     creative: dummy("a", "mpu"),
   },
 };

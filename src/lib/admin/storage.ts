@@ -13,6 +13,53 @@ export const AV_MAX_BYTES = 50 * 1024 * 1024;
 /** Originals smaller than this are uploaded as-is; larger ones are re-encoded to webp. */
 export const IMAGE_KEEP_ORIGINAL_BYTES = 400 * 1024;
 export const IMAGE_MAX_EDGE = 2400;
+/** Ad creatives and brand assets: exact pixels matter, so they are never re-encoded. */
+export const AD_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+export const BRAND_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const BRANDING_ACCEPT = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
+export const BRANDING_ACCEPT_ATTR = "image/jpeg,image/png,image/webp,image/gif,image/svg+xml,.svg";
+
+/**
+ * Where an upload goes. The default (no target) is the media bucket with the
+ * {yyyy}/{mm}/{folder} layout; ad creatives and brand assets pass a target
+ * for the branding bucket.
+ */
+export interface UploadTarget {
+  bucket: string;
+  /** Object path for a new upload with this extension. */
+  path: (ext: string) => string;
+  accept?: string[];
+  acceptAttr?: string;
+  maxBytes?: number;
+  /** Shown under the dropzone, e.g. "JPG, PNG, WebP, GIF or SVG · up to 2 MB". */
+  limits?: string;
+  /** Upload the file untouched (no downscale / webp re-encode). */
+  keepOriginal?: boolean;
+}
+
+export function adCreativeTarget(slotKey: string): UploadTarget {
+  return {
+    bucket: BRANDING_BUCKET,
+    path: (ext) => buildBrandingPath(`ads/${slotKey}`, ext),
+    accept: BRANDING_ACCEPT,
+    acceptAttr: BRANDING_ACCEPT_ATTR,
+    maxBytes: AD_IMAGE_MAX_BYTES,
+    limits: "JPG, PNG, WebP, GIF or SVG · up to 2 MB",
+    keepOriginal: true,
+  };
+}
+
+export function brandAssetTarget(folder: "logo" | "hero"): UploadTarget {
+  return {
+    bucket: BRANDING_BUCKET,
+    path: (ext) => buildBrandingPath(folder, ext),
+    accept: BRANDING_ACCEPT,
+    acceptAttr: BRANDING_ACCEPT_ATTR,
+    maxBytes: BRAND_IMAGE_MAX_BYTES,
+    limits: "JPG, PNG, WebP, GIF or SVG · up to 5 MB",
+    keepOriginal: folder === "logo",
+  };
+}
 
 export type UploadKind = "image" | "video" | "audio";
 
@@ -34,6 +81,7 @@ const EXT_BY_MIME: Record<string, string> = {
   "image/webp": "webp",
   "image/avif": "avif",
   "image/gif": "gif",
+  "image/svg+xml": "svg",
   "video/mp4": "mp4",
   "video/webm": "webm",
   "video/quicktime": "mov",
@@ -52,13 +100,16 @@ export function formatBytes(bytes: number): string {
 }
 
 /** Friendly validation message, or null when the file is acceptable. */
-export function validateFile(file: File, kind: UploadKind): string | null {
+export function validateFile(file: File, kind: UploadKind, target?: UploadTarget): string | null {
   const mime = normaliseMime(file);
-  if (!ACCEPT[kind].includes(mime)) {
-    const wanted = kind === "image" ? "a JPG, PNG, WebP, AVIF or GIF image" : kind === "video" ? "an MP4, WebM or MOV video" : "an MP3, M4A, AAC, WAV or OGG audio file";
+  const accept = target?.accept ?? ACCEPT[kind];
+  if (!accept.includes(mime)) {
+    const wanted = target?.limits
+      ? target.limits.split(" · ")[0]
+      : kind === "image" ? "a JPG, PNG, WebP, AVIF or GIF image" : kind === "video" ? "an MP4, WebM or MOV video" : "an MP3, M4A, AAC, WAV or OGG audio file";
     return `That file type isn't supported. Please choose ${wanted}.`;
   }
-  const max = kind === "image" ? IMAGE_MAX_BYTES : AV_MAX_BYTES;
+  const max = target?.maxBytes ?? (kind === "image" ? IMAGE_MAX_BYTES : AV_MAX_BYTES);
   if (file.size > max) {
     return `This file is ${formatBytes(file.size)}. The limit for ${kind} files is ${formatBytes(max)}.`;
   }
@@ -70,7 +121,7 @@ export function normaliseMime(file: File): string {
   if (file.type && file.type !== "application/octet-stream") return file.type === "audio/x-m4a" ? "audio/mp4" : file.type;
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
   const byExt: Record<string, string> = {
-    jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", avif: "image/avif", gif: "image/gif",
+    jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", avif: "image/avif", gif: "image/gif", svg: "image/svg+xml",
     mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime",
     mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg",
   };
@@ -84,6 +135,12 @@ export function extensionFor(mime: string, fallbackName = ""): string {
 function uuid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/** `{folder}/{uuid}.{ext}` inside the branding bucket (`ads/{slotKey}`, `logo`, `hero`). */
+export function buildBrandingPath(folder: string, ext: string): string {
+  const clean = folder.replace(/[^a-zA-Z0-9._/-]/g, "").replace(/^\/+|\/+$/g, "") || "misc";
+  return `${clean}/${uuid()}.${ext}`;
 }
 
 /** `{yyyy}/{mm}/{postSlugOrTemp}/{uuid}.{ext}` inside the media bucket. */

@@ -2,20 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Camera, ChevronDown, Headphones, PenLine, Play, Plus, Siren } from "lucide-react";
-import type { PostType } from "@/types/content";
+import { ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/admin/ui/DropdownMenu";
-
-export const POST_TYPE_OPTIONS: Array<{ type: PostType; label: string; hint: string; Icon: typeof Camera }> = [
-  { type: "image", label: "Photo news", hint: "A story led by a photograph", Icon: Camera },
-  { type: "blog", label: "Blog", hint: "Long-form writing", Icon: PenLine },
-  { type: "video", label: "Video", hint: "Upload or embed a video", Icon: Play },
-  { type: "podcast", label: "Podcast", hint: "Upload audio or embed an episode", Icon: Headphones },
-  { type: "breaking", label: "Breaking", hint: "Goes into the ticker immediately", Icon: Siren },
-];
-
-export const newPostHref = (type: PostType) => `/admin/posts/new?type=${type}`;
+import { POST_TYPE_OPTIONS, newPostHref } from "@/components/admin/post-types";
 
 interface NewPostMenuProps {
   /** "split" = button + chevron (top bar); "fab" = floating round button (mobile). */

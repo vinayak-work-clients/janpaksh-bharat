@@ -6,7 +6,7 @@
  * MediaUploader and the editor's "use frame as cover" action.
  */
 import { createClient } from "@/lib/supabase/client";
-import { MEDIA_BUCKET, buildMediaPath, publicUrl, uploadWithProgress, type UploadProgress } from "@/lib/admin/storage";
+import { MEDIA_BUCKET, buildMediaPath, publicUrl, uploadWithProgress, type UploadProgress, type UploadTarget } from "@/lib/admin/storage";
 
 export interface UploadedObject {
   url: string;
@@ -19,6 +19,8 @@ interface UploadBlobArgs {
   ext: string;
   /** Post slug, or "temp" for a post that has no slug yet. */
   folder: string;
+  /** Other bucket / path layout (ad creatives, brand assets). */
+  target?: UploadTarget;
   onProgress?: (p: UploadProgress) => void;
   signal?: AbortSignal;
 }
@@ -32,20 +34,21 @@ async function accessToken(): Promise<string> {
   return session.access_token;
 }
 
-export async function uploadBlob({ blob, contentType, ext, folder, onProgress, signal }: UploadBlobArgs): Promise<UploadedObject> {
+export async function uploadBlob({ blob, contentType, ext, folder, target, onProgress, signal }: UploadBlobArgs): Promise<UploadedObject> {
   const token = await accessToken();
-  const path = buildMediaPath(folder, ext);
-  await uploadWithProgress({ bucket: MEDIA_BUCKET, path, file: blob, contentType, accessToken: token, onProgress, signal });
-  return { url: publicUrl(MEDIA_BUCKET, path), path };
+  const bucket = target?.bucket ?? MEDIA_BUCKET;
+  const path = target ? target.path(ext) : buildMediaPath(folder, ext);
+  await uploadWithProgress({ bucket, path, file: blob, contentType, accessToken: token, onProgress, signal });
+  return { url: publicUrl(bucket, path), path };
 }
 
 /** Best-effort delete of temp uploads the user replaced before saving. */
-export async function removeUploaded(paths: string[]): Promise<void> {
+export async function removeUploaded(paths: string[], bucket: string = MEDIA_BUCKET): Promise<void> {
   const clean = paths.filter(Boolean);
   if (!clean.length) return;
   try {
     const supabase = createClient();
-    await supabase.storage.from(MEDIA_BUCKET).remove(clean);
+    await supabase.storage.from(bucket).remove(clean);
   } catch {
     /* the nightly orphan sweep will catch it */
   }
