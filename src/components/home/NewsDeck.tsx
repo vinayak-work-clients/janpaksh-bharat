@@ -22,6 +22,9 @@ import {
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Post } from "@/types/content";
 import { cn, timeAgo } from "@/lib/utils";
+
+/** Card sizes for next/image; the centre card's preload link is derived from it. */
+const DECK_SIZES = "(min-width:1024px) 34vw, 90vw";
 import { TypeBadge } from "@/components/ui/TypeBadge";
 
 /* ------------------------------------------------------------------ */
@@ -102,6 +105,8 @@ const Z_INDEX = [30, 20, 10] as const;
 
 /** Below this many stories the 3D fan has nothing to fan: show one card. */
 const MIN_DECK = 3;
+
+
 
 /* ------------------------------------------------------------------ */
 /*  Hooks                                                              */
@@ -377,12 +382,14 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
                       src={post.coverImage}
                       alt=""
                       fill
-                      // Only the centre card is above the fold on phones; the
-                      // neighbours load right after instead of competing with it.
-                      priority={abs === 0}
-                      loading={abs <= 1 ? "eager" : "lazy"}
+                      // The centre card is the hero's largest paint on phones:
+                      // next/image turns this into <link rel="preload" as="image"
+                      // fetchpriority="high">. Neighbours stay lazy (in view on
+                      // desktop, so they still load at once, without a preload).
+                      fetchPriority={abs === 0 ? "high" : undefined}
+                      loading={abs === 0 ? "eager" : "lazy"}
                       draggable={false}
-                      sizes="(min-width:1024px) 34vw, 90vw"
+                      sizes={DECK_SIZES}
                       className="object-cover"
                     />
                   )}

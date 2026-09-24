@@ -38,9 +38,11 @@ function HeroBackdrop() {
           className="scale-[1.15] object-cover opacity-[0.16] blur-[28px]"
         />
       )}
-      {/* Saffron glow, centred behind the deck's centre card */}
+      {/* Saffron glow, centred behind the deck's centre card. Anchored in px on
+          phones: a percentage of the section height would move (and count as a
+          layout shift) every time the headline or deck settles. */}
       <div
-        className="absolute left-1/2 top-[64%] h-[900px] w-[900px] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 lg:left-[71%] lg:top-1/2"
+        className="absolute left-1/2 top-[560px] h-[900px] w-[900px] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 lg:left-[71%] lg:top-1/2"
         style={{
           background:
             "radial-gradient(closest-side, rgba(232,134,42,0.18) 0%, rgba(232,134,42,0.08) 30%, rgba(232,134,42,0) 60%)",
@@ -66,7 +68,7 @@ function SplitHeadline({ text, play }: { text: string; play: boolean }) {
     <h1
       id="hero-title"
       lang="hi"
-      className="hindi mt-5 max-w-[18ch] font-hindi-serif text-display font-bold text-paper lg:text-[clamp(2.75rem,4.15vw,4.25rem)]"
+      className="hindi mt-5 max-w-[18ch] font-hindi-display text-display font-bold text-paper lg:text-[clamp(2.75rem,4.15vw,4.25rem)]"
     >
       {words.map((word, i) => (
         // The word space lives between the inline-blocks; a trailing space

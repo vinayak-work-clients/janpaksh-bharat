@@ -116,14 +116,23 @@ list. To show it on the front page's "Closer to home" block, add the slug to
 
 ## Performance notes
 
-Lighthouse (mobile, simulated 3G) sits in the mid-70s for Performance with
-100/100 for Accessibility, Best Practices and SEO. The remaining cost is the
-web-font payload (~400 KB: Inter variable, Fraunces normal + italic, Tiro
-Devanagari, Noto Serif Devanagari for the lockup) competing with the
-largest image on a 1.6 Mbps link. Levers, in order of impact: consolidate the
-two Devanagari faces into one, drop Fraunces italic (synthesised oblique),
-or move the Hindi headline face to `font-display: optional`. All three are
-typography decisions for the client, not code defects.
+Lighthouse (mobile, simulated 3G): articles and sections score in the high
+80s for Performance; the front page sits around 70 because its largest paint
+is the hero deck's centre-card image on a 1.6 Mbps link that is shared with
+~250 KB of JS and the fonts. All pages score 100 for Accessibility, Best
+Practices and SEO.
+
+Fonts (`src/app/layout.tsx`): Inter (one variable file, preloaded), Fraunces
+static 400/700 upright + 400 italic (`.font-serif.italic` maps to the italic
+family in `globals.css`; not preloaded, italic is `font-display: optional` so
+a late swap never shifts the hero deck), Noto Serif Devanagari 400 (Hindi
+copy, not preloaded) and 700 (headline + lockup, preloaded,
+`font-display: optional`; its size-adjusted fallback measured identical, so
+a slow first visit shows the fallback instead of swapping late). The "₹"
+glyph pulls each family's latin-ext chunk on demand; that is expected.
+
+Remaining front-page levers: fewer JS bytes above the fold (framer-motion in
+the hero and deck) or a lighter hero image treatment.
 
 ## Known limitations
 

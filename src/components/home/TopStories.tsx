@@ -24,7 +24,6 @@ function LeadStory({ post }: { post: Post }) {
             src={post.coverImage}
             alt=""
             fill
-            priority
             sizes="(min-width: 1280px) 50vw, (min-width: 1024px) 58vw, 100vw"
             className="object-cover transition-transform duration-[600ms] ease-expo-out group-hover:scale-[1.03]"
           />
