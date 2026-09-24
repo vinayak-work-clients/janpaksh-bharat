@@ -20,11 +20,13 @@ const config: Config = {
         saffron: {
           DEFAULT: "#E8862A",
           light: "#F5B56A",
-          dark: "#B8611A",
+          // 5.3:1 on paper, 4.8:1 on paper-2 (AA for body text).
+          dark: "#9E500D",
         },
         breaking: "#C8102E",
         rule: "#D8D2C8",
-        muted: "#6B6B75",
+        // 4.9:1 on paper-2.
+        muted: "#63636C",
       },
       fontFamily: {
         serif: [
@@ -36,14 +38,14 @@ const config: Config = {
         ],
         sans: [
           "var(--font-sans)",
-          "var(--font-hindi-sans)",
+          "var(--font-hindi-serif)",
           "system-ui",
           "-apple-system",
           "Segoe UI",
           "sans-serif",
         ],
         "hindi-serif": ["var(--font-hindi-serif)", "var(--font-serif)", "serif"],
-        "hindi-sans": ["var(--font-hindi-sans)", "var(--font-sans)", "sans-serif"],
+        "hindi-sans": ["var(--font-hindi-serif)", "var(--font-sans)", "sans-serif"],
         "hindi-display": ["var(--font-hindi-display)", "var(--font-hindi-serif)", "serif"],
       },
       fontSize: {

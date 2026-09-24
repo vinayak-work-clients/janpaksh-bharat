@@ -16,6 +16,7 @@ import { ConnectBand } from "@/components/home/ConnectBand";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/about" },
   title: "About",
   description: siteConfig.about.mission,
 };

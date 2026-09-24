@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getSection } from "@/config/sections";
 import { getLivePostBySlug, getLivePosts, getMoreInSection, getRelatedPosts } from "@/lib/data/posts";
 import { ArticleView } from "@/components/article/ArticleView";
 
@@ -27,10 +28,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       title: post.title,
       description: post.standfirst ?? post.excerpt,
-      images: [{ url: post.coverImage }],
       publishedTime: post.publishedAt,
       authors: [post.author.name],
+      section: getSection(post.section)?.name,
+      tags: post.tags,
     },
+    twitter: { card: "summary_large_image", title: post.title, description: post.standfirst ?? post.excerpt },
   };
 }
 

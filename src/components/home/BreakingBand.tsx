@@ -24,7 +24,7 @@ export function BreakingBand({ posts }: { posts: Post[] }) {
               </Link>
             </span>
           ))}
-          <Link href="/breaking" className="ml-3 whitespace-nowrap font-sans text-sm font-medium text-muted hover:text-ink">
+          <Link href="/breaking" className="ml-3 whitespace-nowrap font-sans text-sm font-medium text-ink/75 hover:text-ink">
             All updates →
           </Link>
         </p>

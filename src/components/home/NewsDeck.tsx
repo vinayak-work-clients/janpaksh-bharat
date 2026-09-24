@@ -154,7 +154,7 @@ function StaticCard({ post, play, className }: { post: Post; play: boolean; clas
           <TypeBadge type={isBreaking ? "breaking" : post.type} variant="onDark" className="absolute left-4 top-4" />
           <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
             <span className="font-sans text-kicker uppercase text-saffron">{post.category}</span>
-            <h3 className="clamp-2 mt-2 font-serif text-h3 text-paper">{post.title}</h3>
+            <h2 className="clamp-2 mt-2 font-serif text-h3 text-paper">{post.title}</h2>
             <time dateTime={post.publishedAt} suppressHydrationWarning className="mt-2 block font-sans text-[0.75rem] text-paper/60">
               {timeAgo(post.publishedAt)}
             </time>
@@ -190,7 +190,16 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
   const docVisible = useDocumentVisible();
 
   const [active, setActive] = useState(0);
-  const [phase, setPhase] = useState<Phase>("hidden");
+  // Server HTML shows the deck in its resting pose so the centre card's image
+  // is painted (and counted) at first paint under the intro overlay; the
+  // first client effect hides it again before the staged entrance.
+  const [phase, setPhase] = useState<Phase>("live");
+  const primed = useRef(false);
+  useEffect(() => {
+    if (primed.current) return;
+    primed.current = true;
+    setPhase("hidden");
+  }, []);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   // Bumped on every manual interaction so the auto-advance timer restarts.
@@ -309,6 +318,7 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
           const slot = abs === 0 ? 0 : abs * 2 - (offset > 0 ? 1 : 0);
           const pose = phase === "hidden" ? HIDDEN_POSE : poseFor(offset, wide, reduceMotion);
           const delay = phase === "entering" ? slot * ENTRANCE_STAGGER_S : 0;
+          const snap = phase === "hidden" && !primed.current;
           const isBreaking = post.isBreaking || post.type === "breaking";
 
           return (
@@ -322,10 +332,12 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
                 willChange: visible ? "transform, filter" : "auto",
                 transformStyle: "preserve-3d",
               }}
-              initial={HIDDEN_POSE}
+              initial={false}
               animate={pose}
               transition={
-                reduceMotion
+                snap
+                  ? { duration: 0 }
+                  : reduceMotion
                   ? { ...QUICK, delay }
                   : {
                       x: { ...SPRING, delay },
@@ -365,7 +377,10 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
                       src={post.coverImage}
                       alt=""
                       fill
-                      priority={abs <= 1}
+                      // Only the centre card is above the fold on phones; the
+                      // neighbours load right after instead of competing with it.
+                      priority={abs === 0}
+                      loading={abs <= 1 ? "eager" : "lazy"}
                       draggable={false}
                       sizes="(min-width:1024px) 34vw, 90vw"
                       className="object-cover"
@@ -383,7 +398,7 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
                     <span className="font-sans text-kicker uppercase text-saffron">
                       {post.category}
                     </span>
-                    <h3 className="clamp-2 mt-2 font-serif text-h3 text-paper">{post.title}</h3>
+                    <h2 className="clamp-2 mt-2 font-serif text-h3 text-paper">{post.title}</h2>
                     <time
                       dateTime={post.publishedAt}
                       suppressHydrationWarning
@@ -410,7 +425,7 @@ export function NewsDeck({ posts, play, className }: NewsDeckProps) {
                 aria-selected={isActive}
                 aria-label={`Story ${i + 1} of ${n}: ${post.title}`}
                 onClick={() => go(i)}
-                className="relative flex h-6 items-center px-0.5"
+                className="relative flex h-11 min-w-[24px] items-center justify-center px-1"
               >
                 {isActive ? (
                   <motion.span

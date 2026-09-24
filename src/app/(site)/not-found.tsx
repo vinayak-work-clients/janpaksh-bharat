@@ -12,7 +12,7 @@ export default function NotFound() {
         <h1 className="mt-4 font-serif text-display text-ink">
           This story has moved on.
         </h1>
-        <p className="hindi mt-3 text-[clamp(1.1rem,2vw,1.5rem)] text-saffron-dark">
+        <p lang="hi" className="hindi mt-3 text-[clamp(1.1rem,2vw,1.5rem)] text-saffron-dark">
           यह पन्ना मौजूद नहीं है
         </p>
         <p className="mt-6 max-w-xl font-sans text-[1.05rem] leading-relaxed text-muted">

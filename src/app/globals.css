@@ -90,8 +90,9 @@
     font-feature-settings: normal;
   }
 
+  /* Small Hindi labels share the serif Devanagari face: one family fewer to download. */
   .hindi-sans {
-    font-family: var(--font-hindi-sans), var(--font-sans), sans-serif;
+    font-family: var(--font-hindi-serif), var(--font-sans), sans-serif;
     line-height: 1.6;
     letter-spacing: 0;
   }

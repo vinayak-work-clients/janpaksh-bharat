@@ -31,14 +31,14 @@ export async function ConnectBand({ samples }: { samples: Post[] }) {
       <div aria-hidden="true" className="grain absolute inset-0 opacity-[0.06]" />
       <div className="container-editorial relative grid items-center gap-12 lg:grid-cols-12">
         <Reveal className="lg:col-span-7">
-          <Kicker tone="ink" className="text-ink/70">
+          <Kicker tone="ink" className="text-ink/85">
             <span className="h-1.5 w-1.5 rounded-full bg-ink" aria-hidden="true" />
             {cta.whatsappLabel}
           </Kicker>
           <h2 id="connect-heading" className="mt-4 max-w-[12ch] font-serif text-display text-ink">
             Don&rsquo;t just read the news. Be part of it.
           </h2>
-          <p className="hindi mt-4 text-[clamp(1.2rem,2.2vw,1.75rem)] text-ink/80">खबर से जुड़िए, बदलाव से जुड़िए</p>
+          <p lang="hi" className="hindi mt-4 text-[clamp(1.2rem,2.2vw,1.75rem)] text-ink/80">खबर से जुड़िए, बदलाव से जुड़िए</p>
           <p className="mt-6 max-w-lg font-sans text-[1.05rem] leading-relaxed text-ink/80">
             Our WhatsApp community gets verified breaking alerts, ground reports and every new episode first — and tells us
             which stories to chase next.

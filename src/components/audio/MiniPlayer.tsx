@@ -59,7 +59,7 @@ export function MiniPlayer() {
           className="fixed inset-x-0 bottom-0 z-[60] border-t border-paper/10 bg-ink text-paper shadow-[0_-12px_40px_rgba(11,11,15,0.35)]"
         >
           <div className="container-editorial flex items-center gap-4 py-3">
-            <Link href={`/news/${current.slug}`} className="relative hidden h-12 w-12 shrink-0 overflow-hidden bg-ink-soft sm:block">
+            <Link href={`/news/${current.slug}`} aria-hidden="true" tabIndex={-1} className="relative hidden h-12 w-12 shrink-0 overflow-hidden bg-ink-soft sm:block">
               <Image src={current.coverImage} alt="" fill sizes="48px" className="object-cover" />
             </Link>
 

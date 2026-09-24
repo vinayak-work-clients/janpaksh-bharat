@@ -1,0 +1,28 @@
+{
+  "name": "Janpaksh Bharat",
+  "short_name": "Janpaksh",
+  "description": "Independent Indian newsroom: current affairs, politics and society through ground reporting, blogs, video and podcasts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F3EE",
+  "theme_color": "#E8862A",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

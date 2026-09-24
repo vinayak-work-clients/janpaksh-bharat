@@ -30,8 +30,11 @@ function HeroBackdrop() {
           src={hero.poster}
           alt=""
           fill
-          sizes="100vw"
-          quality={35}
+          // Blurred by 28px, so a 64px source is indistinguishable from full size
+          // (and too low-entropy to count as the largest contentful paint).
+          sizes="24px"
+          quality={30}
+          loading="eager"
           className="scale-[1.15] object-cover opacity-[0.16] blur-[28px]"
         />
       )}
@@ -74,7 +77,10 @@ function SplitHeadline({ text, play }: { text: string; play: boolean }) {
           <span className="inline-block overflow-hidden py-[0.15em] align-bottom">
             <motion.span
               className="inline-block will-change-transform"
-              initial={reduceMotion ? { opacity: 0 } : { y: "110%" }}
+              // Server HTML is the final pose (a valid LCP paint under the intro
+              // overlay); on hydration the words snap out of view instantly and
+              // then slide in once the overlay lifts.
+              initial={reduceMotion ? { opacity: 1 } : { y: "0%" }}
               animate={
                 play
                   ? reduceMotion
@@ -85,7 +91,7 @@ function SplitHeadline({ text, play }: { text: string; play: boolean }) {
                     : { y: "110%" }
               }
               transition={{
-                duration: reduceMotion ? 0.4 : 0.9,
+                duration: play ? (reduceMotion ? 0.4 : 0.9) : 0,
                 delay: play ? i * 0.06 : 0,
                 ease: EXPO_OUT,
               }}

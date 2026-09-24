@@ -23,7 +23,7 @@ export function ListenBand({ podcasts }: { podcasts: Post[] }) {
           <Kicker dot>Podcast</Kicker>
           <h2 id="listen-heading" className="mt-3 font-serif text-h2 text-ink">
             {podcast.showName}
-            <span className="hindi mt-1 block text-[0.6em] font-normal text-saffron-dark">
+            <span lang="hi" className="hindi mt-1 block text-[0.6em] font-normal text-saffron-dark">
               {podcast.showNameHindi}
             </span>
           </h2>
@@ -46,7 +46,7 @@ export function ListenBand({ podcasts }: { podcasts: Post[] }) {
                   <span aria-hidden="true" className="hidden w-10 shrink-0 font-serif text-[1.5rem] font-light italic leading-none text-saffron sm:block">
                     {epNo}
                   </span>
-                  <Link href={`/news/${post.slug}`} className="relative h-16 w-16 shrink-0 overflow-hidden bg-paper sm:h-20 sm:w-20">
+                  <Link href={`/news/${post.slug}`} aria-hidden="true" tabIndex={-1} className="relative h-16 w-16 shrink-0 overflow-hidden bg-paper sm:h-20 sm:w-20">
                     <Image src={post.coverImage} alt="" fill sizes="80px" className="object-cover transition-transform duration-[600ms] ease-expo-out group-hover:scale-[1.05]" />
                   </Link>
                   <div className="min-w-0 flex-1">

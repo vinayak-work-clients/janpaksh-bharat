@@ -127,7 +127,8 @@ export function Logo({
           className={cn(
             "block whitespace-nowrap font-serif font-bold uppercase tracking-[0.16em]",
             m.english,
-            paper ? "text-paper" : "text-saffron",
+            // Saffron fails AA at this size on paper; the mark keeps the accent.
+            paper ? "text-paper" : "text-ink/80",
           )}
         >
           {name}
@@ -148,12 +149,9 @@ export function Logo({
   }
 
   return (
-    <Link
-      href="/"
-      aria-label={`${nameHindi} · ${name} — home`}
-      className={base}
-    >
+    <Link href="/" className={base}>
       {content}
+      <span className="sr-only">, home</span>
     </Link>
   );
 }

@@ -15,6 +15,7 @@ import { Kicker } from "@/components/ui/Kicker";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/blogs" },
   title: "Stories",
   description: "Every live story from Janpaksh Bharat — photo reports, blogs, videos and podcasts, in one place.",
 };
@@ -99,8 +100,9 @@ export default async function BlogsPage({ searchParams }: Props) {
           <>
             {lead && (
               <div className="grid gap-8 lg:grid-cols-12">
+                <h2 className="sr-only">Latest stories</h2>
                 <Reveal className="lg:col-span-7">
-                  <PostCard post={lead} span={6} className="h-full" />
+                  <PostCard post={lead} span={6} className="h-full" priority />
                 </Reveal>
                 <Reveal delay={0.08} className="flex flex-col gap-8 lg:col-span-5">
                   {secondary.map((p) => (

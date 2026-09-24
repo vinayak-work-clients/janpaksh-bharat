@@ -13,6 +13,7 @@ import { WhatsAppIcon, socialLinksFor } from "@/components/icons/SocialIcons";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contact" },
   title: "Contact",
   description: "Story tips, partnerships, corrections or just to say hello — talk to the Janpaksh Bharat desk.",
 };

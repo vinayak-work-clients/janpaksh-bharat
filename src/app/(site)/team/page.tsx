@@ -12,6 +12,7 @@ import { InstagramIcon, LinkedInIcon, XIcon } from "@/components/icons/SocialIco
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/team" },
   title: "Team",
   description: "The reporters, producers and editors behind Janpaksh Bharat.",
 };

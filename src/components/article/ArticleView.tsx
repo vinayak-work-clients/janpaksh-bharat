@@ -4,6 +4,8 @@ import { ArrowRight } from "lucide-react";
 import type { Post } from "@/types/content";
 import { getSection, sectionHref } from "@/config/sections";
 import { getSiteSettings, type SiteSettings } from "@/lib/data/settings";
+import { articleLd, breadcrumbLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { cn, formatDate, formatDuration, timeAgo } from "@/lib/utils";
 import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { ArticleBody } from "@/components/ArticleBody";
@@ -117,6 +119,16 @@ export async function ArticleView({ post, related, moreIn }: ArticleViewProps) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          articleLd(post, settings, section),
+          breadcrumbLd([
+            { name: "Home", path: "/" },
+            ...(section ? [{ name: section.name, path: sectionHref(section.slug) }] : []),
+            { name: post.title, path: `/news/${post.slug}` },
+          ]),
+        ]}
+      />
       <ReadingProgress targetId="article-body" tone={tone} />
 
       <article id="article">
@@ -145,7 +157,7 @@ export async function ArticleView({ post, related, moreIn }: ArticleViewProps) {
             {post.title}
           </h1>
           {post.titleHindi && (
-            <p className="hindi mt-3 max-w-[40ch] text-[clamp(1.1rem,1.8vw,1.4rem)] text-saffron-dark">{post.titleHindi}</p>
+            <p lang="hi" className="hindi mt-3 max-w-[40ch] text-[clamp(1.1rem,1.8vw,1.4rem)] text-saffron-dark">{post.titleHindi}</p>
           )}
           {post.standfirst && (
             <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-muted">{post.standfirst}</p>
@@ -232,7 +244,7 @@ export async function ArticleView({ post, related, moreIn }: ArticleViewProps) {
                 </ol>
 
                 <div className="mt-8 bg-saffron p-5 text-ink">
-                  <Kicker tone="ink" className="text-ink/70">{settings.cta.whatsappLabel}</Kicker>
+                  <Kicker tone="ink" className="text-ink/85">{settings.cta.whatsappLabel}</Kicker>
                   <p className="mt-2 font-serif text-[1.15rem] font-semibold leading-snug">Get the next update before it&rsquo;s a headline.</p>
                   <Button href={settings.socials.whatsapp} external variant="secondary" size="sm" className="mt-4">
                     <WhatsAppIcon className="h-4 w-4" />

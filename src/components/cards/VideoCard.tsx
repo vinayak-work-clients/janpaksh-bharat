@@ -18,6 +18,7 @@ interface VideoCardProps {
   headingLevel?: "h3" | "h4";
   /** Hide the text block (poster only). */
   posterOnly?: boolean;
+  priority?: boolean;
 }
 
 export function VideoCard({
@@ -27,6 +28,7 @@ export function VideoCard({
   sizes = "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw",
   headingLevel: Heading = "h3",
   posterOnly = false,
+  priority = false,
 }: VideoCardProps) {
   const [hovering, setHovering] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -73,6 +75,7 @@ export function VideoCard({
             src={post.coverImage}
             alt=""
             fill
+            priority={priority}
             sizes={sizes}
             className={cn(
               "object-cover transition-transform duration-[600ms] ease-expo-out group-hover:scale-[1.03]",

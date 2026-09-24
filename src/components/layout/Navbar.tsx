@@ -297,7 +297,7 @@ export function Navbar() {
               transition={{ delay: reduceMotion ? 0 : 0.5, duration: 0.5 }}
               className="container-editorial flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-paper/10 py-6"
             >
-              <p className="hindi text-saffron">{settings.tagline}</p>
+              <p lang="hi" className="hindi text-saffron">{settings.tagline}</p>
               <ul className="flex items-center gap-2">
                 {socialLinks.map(({ label, href, Icon }) => (
                   <li key={label}>

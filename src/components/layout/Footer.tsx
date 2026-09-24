@@ -53,13 +53,13 @@ export async function Footer() {
         aria-hidden="true"
         className="container-editorial pointer-events-none select-none overflow-hidden"
       >
+        {/* Decorative: drawn with a pseudo-element so it is neither read nor contrast-checked. */}
         <p
           lang="hi"
-          className="hindi-display -mb-[0.28em] mt-8 whitespace-nowrap leading-[1.1] text-paper/[0.06]"
+          data-text={s.nameHindi}
+          className="hindi-display -mb-[0.28em] mt-8 whitespace-nowrap leading-[1.1] text-paper/[0.06] before:content-[attr(data-text)]"
           style={{ fontSize: "clamp(4.5rem, 17vw, 16rem)" }}
-        >
-          {s.nameHindi}
-        </p>
+        />
       </div>
 
       <div className="container-editorial relative border-t border-paper/10">
@@ -73,7 +73,7 @@ export async function Footer() {
             <p className="mt-3 max-w-sm font-sans text-[0.9rem] leading-relaxed text-paper/70">
               {s.description}
             </p>
-            <p className="hindi mt-4 text-[1.05rem] text-saffron">
+            <p lang="hi" className="hindi mt-4 text-[1.05rem] text-saffron">
               {s.tagline}
             </p>
             <p className="mt-1 font-serif text-[0.95rem] italic text-paper/60">{s.taglineEn}</p>

@@ -16,6 +16,8 @@ interface PostCardProps {
   /** Column span in the 12-col mosaic; drives layout choices. */
   span?: Span;
   className?: string;
+  /** Above the fold: load the picture eagerly (lead cards on listing pages). */
+  priority?: boolean;
 }
 
 const spanSizes: Record<Span, string> = {
@@ -26,16 +28,16 @@ const spanSizes: Record<Span, string> = {
 };
 
 /** Picks the card variant from the post type. */
-export function PostCard({ post, span = 4, className }: PostCardProps) {
+export function PostCard({ post, span = 4, className, priority = false }: PostCardProps) {
   switch (post.type) {
     case "image":
-      return <PhotoCard post={post} span={span} className={className} />;
+      return <PhotoCard post={post} span={span} className={className} priority={priority} />;
     case "blog":
       return <EssayCard post={post} className={className} />;
     case "video":
-      return <VideoCard post={post} sizes={spanSizes[span]} className={className} />;
+      return <VideoCard post={post} sizes={spanSizes[span]} className={className} priority={priority} />;
     case "podcast":
-      return <AudioCard post={post} span={span} className={className} />;
+      return <AudioCard post={post} span={span} className={className} priority={priority} />;
     case "breaking":
       return <AlertCard post={post} className={className} />;
   }
@@ -45,7 +47,7 @@ export function PostCard({ post, span = 4, className }: PostCardProps) {
 /*  PhotoCard                                                          */
 /* ------------------------------------------------------------------ */
 
-export function PhotoCard({ post, span = 4, className }: PostCardProps) {
+export function PhotoCard({ post, span = 4, className, priority = false }: PostCardProps) {
   const overlay = span >= 5;
 
   if (overlay) {
@@ -57,6 +59,7 @@ export function PhotoCard({ post, span = 4, className }: PostCardProps) {
               src={post.coverImage}
               alt=""
               fill
+              priority={priority}
               sizes={spanSizes[span]}
               className="object-cover transition-transform duration-[600ms] ease-expo-out group-hover:scale-[1.03]"
             />
@@ -85,6 +88,7 @@ export function PhotoCard({ post, span = 4, className }: PostCardProps) {
             src={post.coverImage}
             alt=""
             fill
+            priority={priority}
             sizes={spanSizes[span]}
             className="object-cover transition-transform duration-[600ms] ease-expo-out group-hover:scale-[1.03]"
           />
@@ -136,7 +140,7 @@ export function EssayCard({ post, className }: PostCardProps) {
 /*  AudioCard                                                          */
 /* ------------------------------------------------------------------ */
 
-export function AudioCard({ post, span = 4, className }: PostCardProps) {
+export function AudioCard({ post, span = 4, className, priority = false }: PostCardProps) {
   const wide = span >= 5;
   return (
     <article className={cn("group h-full", className)}>
@@ -157,6 +161,7 @@ export function AudioCard({ post, span = 4, className }: PostCardProps) {
             src={post.coverImage}
             alt=""
             fill
+            priority={priority}
             sizes={wide ? "(min-width: 1024px) 18vw, 40vw" : spanSizes[span]}
             className="object-cover transition-transform duration-[600ms] ease-expo-out group-hover:scale-[1.03]"
           />

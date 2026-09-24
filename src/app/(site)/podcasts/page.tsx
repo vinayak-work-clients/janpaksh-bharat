@@ -18,7 +18,7 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { podcast } = await getSiteSettings();
-  return { title: `${podcast.showName} — Podcast`, description: podcast.blurb };
+  return { title: `${podcast.showName} — Podcast`, description: podcast.blurb, alternates: { canonical: "/podcasts" } };
 }
 
 const HERO = "https://images.unsplash.com/photo-1589903308904-1010c2294adc?auto=format&fit=crop&w=2400&q=80";

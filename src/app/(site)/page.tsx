@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { getSection } from "@/config/sections";
 import { getSiteSettings } from "@/lib/data/settings";
 import { getHeroDeck, getHomeFeed, getLatestPosts, getLivePostsBySection } from "@/lib/data/posts";
@@ -8,9 +9,11 @@ import { RegionsBlock, type RegionColumnData } from "@/components/home/RegionsBl
 import { TopStories } from "@/components/home/TopStories";
 import { BreakingBand } from "@/components/home/BreakingBand";
 import { Mosaic } from "@/components/home/Mosaic";
-import { WatchStrip } from "@/components/home/WatchStrip";
-import { ListenBand } from "@/components/home/ListenBand";
 import { ConnectBand } from "@/components/home/ConnectBand";
+
+// Below the fold and interactive: split their JS out of the initial bundle.
+const WatchStrip = dynamic(() => import("@/components/home/WatchStrip").then((m) => m.WatchStrip), { ssr: true });
+const ListenBand = dynamic(() => import("@/components/home/ListenBand").then((m) => m.ListenBand), { ssr: true });
 
 export const revalidate = 60;
 
@@ -19,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: `${s.name} – ${s.tagline}` },
     description: s.description,
+    alternates: { canonical: "/" },
   };
 }
 

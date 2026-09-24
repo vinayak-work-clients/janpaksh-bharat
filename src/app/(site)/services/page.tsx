@@ -13,6 +13,7 @@ import { WhatsAppIcon } from "@/components/icons/SocialIcons";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/services" },
   title: "Services",
   description: "Ground reporting, video, podcasts, partnerships, event coverage and public notices — journalism produced end to end.",
 };

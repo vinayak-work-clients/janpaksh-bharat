@@ -15,6 +15,7 @@ import type { Post } from "@/types/content";
 export const revalidate = 30;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/breaking" },
   title: "Breaking News",
   description: "Developing stories from across India, updated as they happen.",
 };

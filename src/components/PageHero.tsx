@@ -67,7 +67,7 @@ export function PageHero({
         )}
         <h1 className={cn("mt-4 max-w-[18ch] font-serif text-h1", dark ? "text-paper" : "text-ink")}>{title}</h1>
         {titleHindi && (
-          <p className={cn("hindi mt-2 text-[clamp(1.1rem,2vw,1.5rem)]", dark ? "text-saffron-light" : "text-saffron-dark")}>
+          <p lang="hi" className={cn("hindi mt-2 text-[clamp(1.1rem,2vw,1.5rem)]", dark ? "text-saffron-light" : "text-saffron-dark")}>
             {titleHindi}
           </p>
         )}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getSiteSettings } from "@/lib/data/settings";
+import { organizationLd, webSiteLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { Preloader } from "@/components/Preloader";
 import { BreakingTicker } from "@/components/layout/BreakingTicker";
@@ -20,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: s.name,
     openGraph: { type: "website", siteName: `${s.nameHindi} · ${s.name}`, title, description: s.description, locale: "en_IN" },
     twitter: { card: "summary_large_image", title, description: s.description },
+    alternates: { canonical: "/" },
   };
 }
 
@@ -32,6 +35,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
   const settings = await getSiteSettings();
   return (
     <SiteSettingsProvider settings={settings}>
+      <JsonLd data={[organizationLd(settings), webSiteLd(settings)]} />
       <a href="#main" className="skip-link">
         Skip to content
       </a>

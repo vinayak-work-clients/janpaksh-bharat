@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { usePreloader } from "@/components/PreloaderProvider";
@@ -14,13 +15,41 @@ const T_OVERLAY_OUT = 2.3; // overlay begins fading, unmounted after exit
 const START_DELAY_MS = 120; // settle after fonts are ready
 const FONT_WAIT_MAX_MS = 400; // never wait longer than this for fonts
 
+// On 2G/3G the whole sequence (font wait + settle + lockup + fade) is capped
+// at 1.8s so readers on mobile data reach the page sooner.
+const SLOW_TOTAL_S = 1.8;
+const SLOW_OUT_START = 1.0;
+const SLOW_OVERLAY_OUT = 1.3;
+
+function isSlowConnection(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const c = (navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
+  return Boolean(c && (c.saveData || c.effectiveType === "2g" || c.effectiveType === "slow-2g" || c.effectiveType === "3g"));
+}
+
 // Entrance offsets, measured from `started`.
 const D_HINDI = 0;
 const D_ENGLISH = 0.2; // slides in beneath the Hindi line
 const D_RULE = 0.55;
 const D_TAGLINE = 0.7;
 
+/**
+ * Brand intro. Only on the front page: readers arriving on a story from a
+ * link or search get the article straight away, and the overlay no longer
+ * delays their largest contentful paint.
+ */
 export function Preloader() {
+  const pathname = usePathname();
+  const { markDone } = usePreloader();
+  const isHome = pathname === "/";
+  useEffect(() => {
+    if (!isHome) markDone();
+  }, [isHome, markDone]);
+  if (!isHome) return null;
+  return <PreloaderOverlay />;
+}
+
+function PreloaderOverlay() {
   // Rendered on the server too, so the overlay covers the page from the very
   // first paint instead of popping in after hydration.
   const [visible, setVisible] = useState(true);
@@ -28,6 +57,7 @@ export function Preloader() {
   const [leaving, setLeaving] = useState(false);
   const reduceMotion = useReducedMotion();
   const decided = useRef(false);
+  const slow = useRef(false);
   const { markDone } = usePreloader();
   const { name, nameHindi, tagline } = useSiteSettings();
 
@@ -37,11 +67,14 @@ export function Preloader() {
   useEffect(() => {
     if (decided.current) return;
     decided.current = true;
+    slow.current = isSlowConnection();
     const fontsReady =
       typeof document !== "undefined" && "fonts" in document
         ? document.fonts.ready.then(() => undefined)
         : Promise.resolve();
-    const cap = new Promise<void>((r) => window.setTimeout(r, FONT_WAIT_MAX_MS));
+    // Slow connections: the font wait + settle must fit inside the 1.8s cap.
+    const fontWait = slow.current ? Math.max(0, (SLOW_TOTAL_S - SLOW_OVERLAY_OUT) * 1000 - START_DELAY_MS) : FONT_WAIT_MAX_MS;
+    const cap = new Promise<void>((r) => window.setTimeout(r, fontWait));
     Promise.race([fontsReady, cap]).then(() => {
       window.setTimeout(() => setStarted(true), START_DELAY_MS);
     });
@@ -61,8 +94,8 @@ export function Preloader() {
   useEffect(() => {
     if (!started) return;
 
-    const outStart = reduceMotion ? 0.35 : T_OUT_START;
-    const overlayOut = reduceMotion ? 0.7 : T_OVERLAY_OUT;
+    const outStart = reduceMotion ? 0.35 : slow.current ? SLOW_OUT_START : T_OUT_START;
+    const overlayOut = reduceMotion ? 0.7 : slow.current ? SLOW_OVERLAY_OUT : T_OVERLAY_OUT;
 
     const t1 = window.setTimeout(() => setLeaving(true), outStart * 1000);
     // The hero's entrance is keyed off this moment so the overlay fade and

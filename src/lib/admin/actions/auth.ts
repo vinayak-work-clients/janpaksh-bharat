@@ -1,7 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/site-url";
 import { LOGIN_PATH, requireAdmin } from "@/lib/admin/auth";
@@ -23,9 +25,25 @@ function safeNext(next: string | undefined): string {
   return next;
 }
 
+const LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 10 * 60 * 1000;
+const GENERIC_ERROR = "Wrong email or password";
+
+function callerIp(): string {
+  const h = headers();
+  return h.get("x-forwarded-for")?.split(",")[0].trim() || h.get("x-real-ip") || "unknown";
+}
+
 export async function signIn(input: { email: string; password: string; next?: string }): Promise<ActionResult> {
   const parsed = credentials.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check your details" };
+
+  // 5 attempts per 10 minutes per IP; the message never says which part was wrong.
+  const gate = rateLimit(`login:${callerIp()}`, LOGIN_ATTEMPTS, LOGIN_WINDOW_MS);
+  if (!gate.ok) {
+    const mins = Math.max(1, Math.ceil(gate.retryAfterSec / 60));
+    return { ok: false, error: `Too many attempts. Try again in ${mins} minute${mins === 1 ? "" : "s"}.` };
+  }
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -33,7 +51,7 @@ export async function signIn(input: { email: string; password: string; next?: st
     password: parsed.data.password,
   });
   if (error || !data.user) {
-    return { ok: false, error: "Wrong email or password" };
+    return { ok: false, error: GENERIC_ERROR };
   }
 
   // Only listed admins may enter; anyone else is signed straight back out.

@@ -6,6 +6,8 @@ import { ArrowRight } from "lucide-react";
 import { getSection, sections, sectionsByKind, sectionHref } from "@/config/sections";
 import { getSiteSettings } from "@/lib/data/settings";
 import { getBreakingPosts, getLivePostsBySection } from "@/lib/data/posts";
+import { breadcrumbLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/PageHero";
 import { AdRail, AdSlot } from "@/components/ads/AdSlot";
 import { PostCard } from "@/components/cards/PostCard";
@@ -68,6 +70,7 @@ export default async function SectionPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd data={breadcrumbLd([{ name: "Home", path: "/" }, { name: section.name, path: sectionHref(section.slug) }])} />
       <PageHero
         variant="light"
         eyebrow={section.kind === "region" ? "Region" : "Topic"}
@@ -110,9 +113,10 @@ export default async function SectionPage({ params }: Props) {
           <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
             {/* Main column */}
             <div className="lg:col-span-8">
+              <h2 className="sr-only">Latest from {section.name}</h2>
               <div className="grid gap-8 md:grid-cols-2">
                 <Reveal className="md:col-span-2">
-                  <PostCard post={lead} span={6} className="h-full" />
+                  <PostCard post={lead} span={6} className="h-full" priority />
                 </Reveal>
                 {secondary.map((p, i) => (
                   <Reveal key={p.id} delay={0.08 + i * 0.05}>

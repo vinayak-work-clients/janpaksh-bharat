@@ -1,27 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Fraunces,
-  Inter,
-  Noto_Sans_Devanagari,
-  Noto_Serif_Devanagari,
-  Tiro_Devanagari_Hindi,
-} from "next/font/google";
+import { Fraunces, Inter, Noto_Serif_Devanagari, Tiro_Devanagari_Hindi } from "next/font/google";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { siteConfig } from "@/config/site";
 import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
 
+// Kept lean on purpose: every file below is ~50–120 KB and mobile readers pay
+// for all of them before the first headline settles.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["normal", "italic"],
-  axes: ["opsz"],
   display: "swap",
   variable: "--font-serif",
 });
 
+// One variable file instead of three static weights.
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
   display: "swap",
   variable: "--font-sans",
 });
@@ -29,16 +26,8 @@ const inter = Inter({
 const tiroHindi = Tiro_Devanagari_Hindi({
   subsets: ["devanagari"],
   weight: "400",
-  style: ["normal", "italic"],
   display: "swap",
   variable: "--font-hindi-serif",
-});
-
-const notoHindi = Noto_Sans_Devanagari({
-  subsets: ["devanagari"],
-  weight: ["400", "700"],
-  display: "swap",
-  variable: "--font-hindi-sans",
 });
 
 // Brand lockup face: "जनपक्ष भारत" in the logo, preloader and footer wordmark.
@@ -46,6 +35,7 @@ const notoSerifHindi = Noto_Serif_Devanagari({
   subsets: ["devanagari"],
   weight: "700",
   display: "swap",
+  preload: false,
   variable: "--font-hindi-display",
 });
 
@@ -57,6 +47,7 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
     siteName: `${siteConfig.nameHindi} · ${siteConfig.name}`,
@@ -87,10 +78,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${tiroHindi.variable} ${notoHindi.variable} ${notoSerifHindi.variable}`}
+      className={`${fraunces.variable} ${inter.variable} ${tiroHindi.variable} ${notoSerifHindi.variable}`}
     >
       <body className="flex min-h-screen flex-col">
         {children}
+        {/* The scripts are served by Vercel; elsewhere (local `next start`) they would 404. */}
+        {process.env.VERCEL && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
         <Toaster
           position="bottom-center"
           closeButton

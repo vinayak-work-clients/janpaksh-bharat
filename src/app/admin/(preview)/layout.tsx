@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { PlayerProvider } from "@/components/audio/PlayerProvider";
+
+export const metadata: Metadata = { robots: { index: false, follow: false, nocache: true } };
 import { MiniPlayer } from "@/components/audio/MiniPlayer";
 
 /**
